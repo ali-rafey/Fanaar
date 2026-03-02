@@ -110,25 +110,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ---- Simple text section ---- */
-.explore-text-section {
-  background: hsl(var(--foreground));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.explore-simple-text {
-  max-width: 50rem;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-  text-align: center;
-  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  line-height: 1.7;
-  color: hsl(0 0% 100% / 0.6);
-  font-style: italic;
-  letter-spacing: 0.02em;
-}
 
 /* ---- Process section ---- */
 .explore-process-section {

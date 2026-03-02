@@ -91,14 +91,7 @@ export default function Explore() {
         </div>
       </section>
 
-      {/* Section 2: Simple text description */}
-      <section className="snap-section explore-text-section">
-        <p className="explore-simple-text">
-          Premium fabrics crafted with precision — from raw fibre to finished textile, every thread tells a story of excellence.
-        </p>
-      </section>
-
-      {/* Section 3: Process – 4-step snap scroll (Sourcing / Purpose / Testing / Sampling) */}
+      {/* Section 2: Process – 4-step snap scroll (Sourcing / Purpose / Testing / Sampling) */}
       <section className="snap-section explore-process-section">
         <ProcessSection />
       </section>
