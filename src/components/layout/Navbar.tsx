@@ -4,7 +4,7 @@ import './Navbar.css';
 const leftMenus = [
   { label: 'Fabric', path: '/explore' },
   { label: 'Thread', path: '/explore' },
-  { label: 'Demo', path: '/explore' },
+  { label: 'Blog', path: '/blog' },
 ];
 
 const rightMenus = [

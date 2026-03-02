@@ -61,7 +61,7 @@ export default function Explore() {
       {/* Section 1: Full-screen Hero */}
       <section className="snap-section explore-hero">
         <div className="explore-hero-media">
-          {heroUrl ? (
+        {heroUrl ? (
             heroType === 'video' ? (
               <video
                 src={heroUrl}
@@ -69,8 +69,8 @@ export default function Explore() {
                 muted
                 loop
                 playsInline
+                preload="auto"
                 className="explore-hero-video"
-                style={{ background: '#000' }}
               />
             ) : (
               <img src={heroUrl} alt="Hero" className="explore-hero-img" />

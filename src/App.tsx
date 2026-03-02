@@ -9,6 +9,7 @@ import Explore from "./pages/Explore";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import ArticleDetail from "./pages/ArticleDetail";
+import BlogDetail from "./pages/BlogDetail";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminArticles from "./pages/admin/AdminArticles";
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/explore/:category" element={<Explore />} />
             <Route path="/article/:id" element={<ArticleDetail />} />
             <Route path="/about" element={<About />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<Contact />} />
 
             {/* Admin pages */}

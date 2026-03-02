@@ -27,6 +27,12 @@
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .snap-container {
+    scroll-snap-type: y proximity;
+  }
+}
+
 /* Footer */
 .site-footer {
   padding: 2rem;
