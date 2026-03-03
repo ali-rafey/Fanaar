@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import ArticleDetail from "./pages/ArticleDetail";
 import BlogDetail from "./pages/BlogDetail";
+import BlogListing from "./pages/BlogListing";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminArticles from "./pages/admin/AdminArticles";
@@ -41,6 +42,7 @@ const App = () => {
             <Route path="/explore/:category" element={<Explore />} />
             <Route path="/article/:id" element={<ArticleDetail />} />
             <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<BlogListing />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<Contact />} />
 

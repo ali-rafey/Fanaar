@@ -123,6 +123,13 @@
   min-height: calc(100vh - 3.5rem);
 }
 
+@media (max-width: 768px) {
+  .explore-process-section {
+    height: auto;
+    min-height: auto;
+  }
+}
+
 /* ---- Categories section ---- */
 .explore-categories-section {
   background: hsl(var(--background));

@@ -34,7 +34,7 @@
 .navbar-right { justify-content: flex-start; }
 
 .navbar-link {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: hsl(0 0% 100% / 0.75);
@@ -130,7 +130,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: hsl(0 0% 100% / 0.7);
   text-transform: uppercase;
