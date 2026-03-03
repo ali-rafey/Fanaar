@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import './ProcessSection.css';
 
 const steps = [
@@ -37,6 +38,7 @@ const steps = [
 ];
 
 export function ProcessSection() {
+  const isMobile = useIsMobile();
   const [activeIndex, setActiveIndex] = useState(0);
   const [animDir, setAnimDir] = useState<'up' | 'down'>('down');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,20 +48,33 @@ export function ProcessSection() {
   const THRESHOLD = 60;
 
   const goTo = useCallback((next: number, dir: 'up' | 'down') => {
-    if (lockRef.current) return;
+    if (next === activeIndex || lockRef.current) return;
+
     lockRef.current = true;
     setAnimDir(dir);
     setActiveIndex(next);
     accumulatorRef.current = 0;
-    setTimeout(() => { lockRef.current = false; }, 900);
-  }, []);
+
+    setTimeout(() => {
+      lockRef.current = false;
+    }, 900);
+  }, [activeIndex]);
 
   useEffect(() => {
+    if (isMobile) {
+      lockRef.current = false;
+      accumulatorRef.current = 0;
+      return;
+    }
+
     const container = containerRef.current;
     if (!container) return;
 
     const handleWheel = (e: WheelEvent) => {
-      if (lockRef.current) { e.preventDefault(); return; }
+      if (lockRef.current) {
+        e.preventDefault();
+        return;
+      }
 
       const direction = e.deltaY > 0 ? 1 : -1;
       const nextIndex = activeIndex + direction;
@@ -67,6 +82,7 @@ export function ProcessSection() {
       if (nextIndex >= 0 && nextIndex < steps.length) {
         e.preventDefault();
         accumulatorRef.current += Math.abs(e.deltaY);
+
         if (accumulatorRef.current >= THRESHOLD) {
           goTo(nextIndex, direction > 0 ? 'down' : 'up');
         }
@@ -76,9 +92,14 @@ export function ProcessSection() {
     };
 
     let touchStartY = 0;
-    const handleTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
       if (lockRef.current) return;
+
       const diff = touchStartY - e.changedTouches[0].clientY;
       if (Math.abs(diff) < 40) return;
 
@@ -100,13 +121,12 @@ export function ProcessSection() {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [activeIndex, goTo]);
+  }, [activeIndex, goTo, isMobile]);
 
   const current = steps[activeIndex];
 
   return (
     <div className="process-container" ref={containerRef}>
-      {/* Left: Text content */}
       <div className="process-text-col">
         <div className="process-indicators">
           {steps.map((step, i) => (
@@ -114,6 +134,7 @@ export function ProcessSection() {
               key={step.key}
               className={`process-dot ${i === activeIndex ? 'active' : ''}`}
               onClick={() => {
+                if (i === activeIndex) return;
                 const dir = i > activeIndex ? 'down' : 'up';
                 goTo(i, dir);
               }}
@@ -132,7 +153,6 @@ export function ProcessSection() {
         </div>
       </div>
 
-      {/* Right: Square image centered */}
       <div className="process-image-col">
         {steps.map((step, i) => (
           <img
@@ -140,6 +160,7 @@ export function ProcessSection() {
             src={step.image}
             alt={step.title}
             className={`process-image ${i === activeIndex ? 'active' : ''}`}
+            loading="lazy"
           />
         ))}
       </div>

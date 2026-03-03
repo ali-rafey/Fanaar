@@ -4,11 +4,14 @@
   height: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-areas: 'text image';
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 /* ---- Left text column ---- */
 .process-text-col {
+  grid-area: text;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -53,6 +56,7 @@
 
 /* ---- Right image column – square, vertically centered ---- */
 .process-image-col {
+  grid-area: image;
   position: relative;
   display: flex;
   align-items: center;
@@ -95,10 +99,18 @@
 }
 
 /* Stagger delays */
-.process-text-content .process-step-label { animation-delay: 0s; }
-.process-text-content .process-subtitle   { animation-delay: 0.06s; }
-.process-text-content .process-title      { animation-delay: 0.12s; }
-.process-text-content .process-desc       { animation-delay: 0.2s; }
+.process-text-content .process-step-label {
+  animation-delay: 0s;
+}
+.process-text-content .process-subtitle {
+  animation-delay: 0.06s;
+}
+.process-text-content .process-title {
+  animation-delay: 0.12s;
+}
+.process-text-content .process-desc {
+  animation-delay: 0.2s;
+}
 
 .process-step-label {
   font-size: 0.6rem;
@@ -132,22 +144,38 @@
 }
 
 @keyframes processSlideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes processSlideDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- Mobile ---- */
 @media (max-width: 768px) {
   .process-container {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'image'
+      'text';
+    grid-template-rows: auto auto;
     height: auto;
     min-height: auto;
+    overflow: visible;
   }
 
   .process-image-col {
@@ -156,7 +184,7 @@
   }
 
   .process-image {
-    width: 80%;
+    width: min(86vw, 360px);
   }
 
   .process-text-col {
