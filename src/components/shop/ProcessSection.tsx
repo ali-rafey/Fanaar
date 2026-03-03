@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 import './ProcessSection.css';
 
 const steps = [
@@ -38,7 +37,6 @@ const steps = [
 ];
 
 export function ProcessSection() {
-  const isMobile = useIsMobile();
   const [activeIndex, setActiveIndex] = useState(0);
   const [animDir, setAnimDir] = useState<'up' | 'down'>('down');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,12 +59,6 @@ export function ProcessSection() {
   }, [activeIndex]);
 
   useEffect(() => {
-    if (isMobile) {
-      lockRef.current = false;
-      accumulatorRef.current = 0;
-      return;
-    }
-
     const container = containerRef.current;
     if (!container) return;
 
@@ -121,7 +113,7 @@ export function ProcessSection() {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [activeIndex, goTo, isMobile]);
+  }, [activeIndex, goTo]);
 
   const current = steps[activeIndex];
 

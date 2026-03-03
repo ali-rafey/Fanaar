@@ -4,7 +4,7 @@
   height: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas: 'text image';
+  grid-template-areas: 'image text';
   overflow: hidden;
   touch-action: pan-y;
 }
@@ -173,9 +173,9 @@
       'image'
       'text';
     grid-template-rows: auto auto;
-    height: auto;
-    min-height: auto;
-    overflow: visible;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
   }
 
   .process-image-col {
