@@ -89,6 +89,26 @@ export function ProcessSection() {
       touchStartY = e.touches[0].clientY;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (lockRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      const currentY = e.touches[0].clientY;
+      const diff = touchStartY - currentY;
+      if (Math.abs(diff) < 10) return;
+
+      const direction = diff > 0 ? 1 : -1;
+      const nextIndex = activeIndex + direction;
+
+      // While there is a next/previous step, keep the viewport fixed
+      // and prevent the outer page from scrolling.
+      if (nextIndex >= 0 && nextIndex < steps.length) {
+        e.preventDefault();
+      }
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
       if (lockRef.current) return;
 
@@ -106,11 +126,13 @@ export function ProcessSection() {
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
   }, [activeIndex, goTo]);

@@ -27,22 +27,6 @@
   justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .snap-container {
-    scroll-snap-type: none;
-  }
-
-  .snap-section {
-    scroll-snap-align: none;
-    min-height: auto;
-  }
-
-  /* Keep hero full height on mobile */
-  .snap-section.explore-hero {
-    min-height: calc(100vh - 3.5rem);
-  }
-}
-
 /* Footer */
 .site-footer {
   padding: 2rem;
