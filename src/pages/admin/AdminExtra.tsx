@@ -69,7 +69,7 @@ export default function AdminExtra() {
     try {
       const isVideo = file.type.startsWith('video/');
       const ext = file.name.split('.').pop();
-      const path = `hero/hero-media.${ext}`;
+      const path = `hero/hero-media-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('fabric-images')
         .upload(path, file, { upsert: true });
