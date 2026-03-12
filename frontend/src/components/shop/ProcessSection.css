@@ -1,0 +1,211 @@
+/* ===================== Process Section – 4-step (dots only) ===================== */
+.process-container {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 'image text';
+  overflow: hidden;
+  touch-action: pan-y;
+  overscroll-behavior: auto;
+}
+
+/* ---- Left text column ---- */
+.process-text-col {
+  grid-area: text;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem;
+  position: relative;
+  background: hsl(var(--background));
+}
+
+/* Step indicators (vertical dots + line) */
+.process-indicators {
+  position: absolute;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.process-indicators::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -0.4rem;
+  bottom: -0.4rem;
+  width: 1px;
+  background: hsl(var(--foreground));
+  opacity: 0.35;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.process-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--foreground));
+  background: hsl(var(--background));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.process-dot.filled {
+  background: hsl(var(--foreground));
+}
+
+.process-dot.current {
+  transform: scale(1.35);
+}
+
+/* Text content */
+.process-text-content {
+  max-width: 28rem;
+  margin-left: 3rem;
+  animation: softText 0.45s ease both;
+}
+
+/* ---- Right image column – square, vertically centered ---- */
+.process-image-col {
+  grid-area: image;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--background));
+  padding: 3rem;
+}
+
+.process-image {
+  position: absolute;
+  width: 75%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  opacity: 0;
+  transform: scale(1.01);
+  filter: blur(2px);
+  transition: opacity 0.2s ease;
+  will-change: opacity, transform, filter;
+}
+
+.process-image.active {
+  opacity: 1;
+  animation: softImage 0.6s ease both;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.process-step-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: hsl(var(--muted-foreground));
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.process-subtitle {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: hsl(var(--muted-foreground));
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.process-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  color: hsl(var(--foreground));
+  margin-bottom: 1.25rem;
+  line-height: 1.1;
+}
+
+.process-desc {
+  font-size: 0.85rem;
+  line-height: 1.8;
+  color: hsl(var(--muted-foreground));
+}
+
+@keyframes softText {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softImage {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  .process-container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'image'
+      'text';
+    grid-template-rows: auto auto;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  .process-image-col {
+    padding: 1.5rem;
+    min-height: 250px;
+  }
+
+  .process-image {
+    width: min(86vw, 360px);
+  }
+
+  .process-text-col {
+    padding: 2rem 1.5rem;
+  }
+
+  .process-indicators {
+    left: auto;
+    right: 1.5rem;
+    top: 1.5rem;
+    transform: none;
+    flex-direction: row;
+    gap: 0.6rem;
+  }
+
+  .process-indicators::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process-text-content,
+  .process-image.active {
+    animation: none !important;
+  }
+
+  .process-image {
+    filter: none;
+  }
+}
