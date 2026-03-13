@@ -44,6 +44,48 @@ const upload = multer({
 
 const ok = (res, data) => res.json(data ?? {});
 const fail = (res, status, message) => res.status(status).json({ error: message });
+const REFRESH_COOKIE = 'fanaar_admin_refresh';
+const isProd = process.env.NODE_ENV === 'production';
+
+const getRefreshToken = (req) => {
+  const cookieHeader = req.headers.cookie || '';
+  if (!cookieHeader) return null;
+  const cookies = cookieHeader.split(';').map((item) => item.trim());
+  for (const cookie of cookies) {
+    if (cookie.startsWith(`${REFRESH_COOKIE}=`)) {
+      return decodeURIComponent(cookie.substring(REFRESH_COOKIE.length + 1));
+    }
+  }
+  return null;
+};
+
+const buildRefreshCookie = (token, maxAgeSeconds) => {
+  const parts = [
+    `${REFRESH_COOKIE}=${encodeURIComponent(token)}`,
+    'Path=/',
+    'HttpOnly',
+  ];
+  if (isProd) {
+    parts.push('SameSite=None');
+    parts.push('Secure');
+  } else {
+    parts.push('SameSite=Lax');
+  }
+  if (maxAgeSeconds) parts.push(`Max-Age=${Math.floor(maxAgeSeconds)}`);
+  return parts.join('; ');
+};
+
+const clearRefreshCookie = () =>
+  [
+    `${REFRESH_COOKIE}=`,
+    'Path=/',
+    'HttpOnly',
+    'Max-Age=0',
+    isProd ? 'SameSite=None' : 'SameSite=Lax',
+    isProd ? 'Secure' : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
 
 const failWith = (res, status, error, context) => {
   if (context) console.error(context);
@@ -173,6 +215,12 @@ app.post('/auth/sign-in', async (req, res) => {
   }
   const admin = await isAdminUser(supabasePublic, data.user.id);
   if (!admin) return fail(res, 403, 'You do not have admin access');
+  if (data.session.refresh_token) {
+    res.setHeader(
+      'Set-Cookie',
+      buildRefreshCookie(data.session.refresh_token, data.session.expires_in)
+    );
+  }
   return ok(res, { token: data.session.access_token, user: data.user, isAdmin: true });
 });
 
@@ -188,7 +236,33 @@ app.post('/auth/sign-up', async (req, res) => {
   return ok(res, { user: data.user, session: data.session });
 });
 
-app.post('/auth/sign-out', async (req, res) => ok(res, { status: 'ok' }));
+app.post('/auth/sign-out', async (req, res) => {
+  res.setHeader('Set-Cookie', clearRefreshCookie());
+  return ok(res, { status: 'ok' });
+});
+
+app.post('/auth/refresh', async (req, res) => {
+  const refreshToken = getRefreshToken(req);
+  if (!refreshToken) return fail(res, 401, 'Missing refresh token');
+
+  const { data, error } = await supabasePublic.auth.refreshSession({ refresh_token: refreshToken });
+  if (error || !data?.session?.access_token) {
+    return fail(res, 401, error?.message || 'Invalid refresh token');
+  }
+
+  const user = data.user || (await getUserFromToken(data.session.access_token));
+  if (!user) return fail(res, 401, 'Unauthorized');
+  const admin = await isAdminUser(supabasePublic, user.id);
+  if (!admin) return fail(res, 403, 'Forbidden');
+
+  if (data.session.refresh_token) {
+    res.setHeader(
+      'Set-Cookie',
+      buildRefreshCookie(data.session.refresh_token, data.session.expires_in)
+    );
+  }
+  return ok(res, { token: data.session.access_token, user, isAdmin: true });
+});
 
 app.get('/auth/me', async (req, res) => {
   const token = getToken(req);

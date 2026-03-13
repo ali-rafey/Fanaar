@@ -36,21 +36,59 @@ const request = async (path: string, options: ApiOptions = {}) => {
       const data = await res.json();
       if (data?.error) message = data.error;
     } catch (_) {}
-    throw new Error(message);
+    const err = new Error(message) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 
   if (res.status === 204) return null;
   return res.json();
 };
 
+const refreshAuthToken = async () => {
+  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const err = new Error('Not authenticated') as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  const data = await res.json();
+  if (!data?.token) throw new Error('Not authenticated');
+  setAuthToken(data.token);
+  return data.token as string;
+};
+
 const authRequest = async (path: string, options: ApiOptions = {}) => {
-  const token = getAuthToken();
-  if (!token) throw new Error('Not authenticated');
+  let token = getAuthToken();
+  if (!token) {
+    try {
+      token = await refreshAuthToken();
+    } catch (_) {
+      throw new Error('Not authenticated');
+    }
+  }
   const headers = {
     ...(options.headers as Record<string, string> | undefined),
     Authorization: `Bearer ${token}`,
   };
-  return request(path, { ...options, headers });
+  try {
+    return await request(path, { ...options, headers });
+  } catch (err: any) {
+    if (err?.status === 401) {
+      try {
+        token = await refreshAuthToken();
+        const retryHeaders = {
+          ...(options.headers as Record<string, string> | undefined),
+          Authorization: `Bearer ${token}`,
+        };
+        return await request(path, { ...options, headers: retryHeaders });
+      } catch (_) {}
+    }
+    throw err;
+  }
 };
 
 export const api = {
@@ -133,10 +171,15 @@ export const api = {
       return res.json();
     },
     signIn: (email: string, password: string) =>
-      request('/auth/sign-in', { method: 'POST', body: { email, password } }),
+      request('/auth/sign-in', {
+        method: 'POST',
+        body: { email, password },
+        credentials: 'include',
+      }),
     signUp: (email: string, password: string, redirectTo?: string) =>
       request('/auth/sign-up', { method: 'POST', body: { email, password, redirectTo } }),
-    signOut: () => authRequest('/auth/sign-out', { method: 'POST' }),
+    signOut: () =>
+      request('/auth/sign-out', { method: 'POST', credentials: 'include' }),
     me: () => authRequest('/auth/me'),
   },
 };
