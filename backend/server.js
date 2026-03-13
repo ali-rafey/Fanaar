@@ -370,6 +370,10 @@ app.post('/admin/upload', requireAdmin, upload.single('file'), async (req, res) 
   return ok(res, { publicUrl: data.publicUrl });
 });
 
-app.listen(Number(PORT), () => {
-  console.log(`Backend listening on :${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(Number(PORT), () => {
+    console.log(`Backend listening on :${PORT}`);
+  });
+}
+
+export default app;
