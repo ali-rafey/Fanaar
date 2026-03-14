@@ -179,23 +179,17 @@
 
   .process-image {
     width: min(86vw, 360px);
+    border-radius: 1.5rem;
   }
+}
 
-  .process-text-col {
-    padding: 2rem 1.5rem;
-  }
-
-  .process-indicators {
-    left: auto;
-    right: 1.5rem;
-    top: 1.5rem;
-    transform: none;
-    flex-direction: row;
-    gap: 0.6rem;
-  }
-
-  .process-indicators::before {
-    display: none;
+/* iOS Safari: crisp rounded corners on process image */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .process-image {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
   }
 }
 

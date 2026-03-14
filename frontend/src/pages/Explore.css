@@ -238,7 +238,7 @@
   .explore-hero-content { padding: 0 1.5rem; }
   .explore-process-section {
     margin-top: 4rem;
-    border-radius: 1rem;
+    border-radius: 2rem;
     overflow: hidden;
   }
   .explore-categories-inner { padding: 0 1rem; }
@@ -246,4 +246,17 @@
   .explore-cat-content { padding: 1.5rem 1rem; }
   .explore-desc-inner { padding: 2rem 1.5rem; }
   .explore-hero-video { object-position: 50% 50% !important; }
+}
+
+/* iOS Safari: fix process section corners and safe area */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .explore-process-section {
+      margin-top: calc(4rem + env(safe-area-inset-top, 0px));
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+  }
 }
