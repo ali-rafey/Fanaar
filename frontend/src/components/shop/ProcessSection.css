@@ -175,18 +175,35 @@
   .process-image-col {
     padding: 1.5rem;
     min-height: 250px;
+    border-radius: 1.5rem;
+    overflow: hidden;
   }
 
   .process-image {
     width: min(86vw, 360px);
     border-radius: 1.5rem;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    border-bottom-left-radius: 1.5rem;
+    border-bottom-right-radius: 1.5rem;
   }
 }
 
-/* iOS Safari: crisp rounded corners on process image */
+/* iOS Safari: force all four corners rounded on process image */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {
+    .process-image-col {
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      border-bottom-left-radius: 1.5rem;
+      border-bottom-right-radius: 1.5rem;
+      overflow: hidden;
+    }
     .process-image {
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      border-bottom-left-radius: 1.5rem;
+      border-bottom-right-radius: 1.5rem;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
     }

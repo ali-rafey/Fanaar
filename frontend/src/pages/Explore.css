@@ -239,7 +239,13 @@
   .explore-process-section {
     margin-top: 4rem;
     border-radius: 2rem;
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+    border-bottom-left-radius: 2rem;
+    border-bottom-right-radius: 2rem;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
   }
   .explore-categories-inner { padding: 0 1rem; }
   .explore-cat-header { padding: 1.5rem 1rem; }
@@ -253,10 +259,15 @@
   @media (max-width: 768px) {
     .explore-process-section {
       margin-top: calc(4rem + env(safe-area-inset-top, 0px));
+      border-top-left-radius: 2rem;
+      border-top-right-radius: 2rem;
+      border-bottom-left-radius: 2rem;
+      border-bottom-right-radius: 2rem;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       transform: translateZ(0);
       -webkit-transform: translateZ(0);
+      isolation: isolate;
     }
   }
 }
