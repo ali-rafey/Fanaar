@@ -28,10 +28,7 @@ export function BlogsSection() {
             className="blog-card"
             onClick={() => {
               if (typeof window !== 'undefined') {
-                const container = document.querySelector('.main-content');
-                const y =
-                  container instanceof HTMLElement ? container.scrollTop : window.scrollY;
-                window.sessionStorage.setItem('explore_scroll_y', String(y));
+                window.sessionStorage.setItem('explore_scroll_y', String(window.scrollY));
               }
               navigate(`/blog/${blog.id}`);
             }}

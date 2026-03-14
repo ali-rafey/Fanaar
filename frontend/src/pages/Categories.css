@@ -7,7 +7,18 @@
   max-width: 72rem;
   margin: 0 auto 3rem;
   padding: 0 2rem;
-  text-align: center;
+}
+
+.categories-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.categories-header .categories-label,
+.categories-header .categories-title {
+  text-align: left;
 }
 
 .categories-label {
@@ -31,6 +42,7 @@
   font-size: 0.9rem;
   line-height: 1.7;
   color: hsl(var(--muted-foreground));
+  text-align: center;
 }
 
 .categories-grid-section {

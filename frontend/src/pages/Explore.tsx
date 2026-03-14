@@ -17,26 +17,28 @@ export default function Explore() {
   const location = useLocation();
   const categoryInfo = category ? getCategoryInfo(category) : null;
 
-  // Restore scroll position when returning from blog detail
+  // Restore scroll when returning from category articles page or blog detail.
+  // Must run when we switch to main view (category becomes undefined), not only on mount.
+  // Explore page scrolls the window (document), so we use window.scrollY / window.scrollTo.
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (category) return; // On category page; restore only when showing main Explore view
 
+    const returnToCategories = window.sessionStorage.getItem('explore_return_to_categories');
     const stored = window.sessionStorage.getItem('explore_scroll_y');
-    if (stored) {
-      const offset = parseFloat(stored);
-      if (!Number.isNaN(offset)) {
-        const container = document.querySelector('.main-content');
-        if (container instanceof HTMLElement) {
-          container.scrollTo({ top: offset, behavior: 'instant' as ScrollBehavior });
-        } else {
-          window.scrollTo({ top: offset });
-        }
-      }
-      window.sessionStorage.removeItem('explore_scroll_y');
-      return;
-    }
+    const offset = stored ? parseFloat(stored) : NaN;
+    const hasValidOffset = !Number.isNaN(offset) && offset >= 0;
 
-  }, []);
+    if (!hasValidOffset) return;
+
+    window.sessionStorage.removeItem('explore_return_to_categories');
+    window.sessionStorage.removeItem('explore_scroll_y');
+
+    const restoreScroll = () => {
+      window.scrollTo({ top: offset, behavior: 'instant' as ScrollBehavior });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(restoreScroll));
+  }, [category]);
 
   const { data: heroSettings } = useQuery({
     queryKey: ['site-settings-hero'],
@@ -77,24 +79,20 @@ export default function Explore() {
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Handle video autoplay gracefully
+  // Ensure video plays as soon as it can (autoPlay handles most cases; this is fallback)
   useEffect(() => {
-    if (heroType === 'video' && heroUrl && heroVideoRef.current) {
-      const video = heroVideoRef.current;
-      video.load();
-      video.muted = heroMuted;
-
-      const attemptPlay = async () => {
-        try {
-          await video.play();
-        } catch {
-          video.muted = true;
-          video.play().catch(() => {});
-        }
-      };
-
-      attemptPlay();
-    }
+    if (heroType !== 'video' || !heroUrl || !heroVideoRef.current) return;
+    const video = heroVideoRef.current;
+    video.muted = heroMuted;
+    const attemptPlay = async () => {
+      try {
+        await video.play();
+      } catch {
+        video.muted = true;
+        video.play().catch(() => {});
+      }
+    };
+    attemptPlay();
   }, [heroUrl, heroType, heroMuted]);
 
   // If a category is selected, show that category page
@@ -104,8 +102,13 @@ export default function Explore() {
         <div className="explore-page">
           <section className="explore-cat-header">
             <div className="explore-cat-header-inner">
-              <button className="explore-back-btn" onClick={() => navigate('/explore')}>
-                <ArrowLeft /> Back to Explore
+              <button
+                type="button"
+                className="explore-back-btn"
+                onClick={() => navigate('/explore')}
+                aria-label="Back to categories"
+              >
+                <ArrowLeft />
               </button>
               <div>
                 <span className="explore-label">Category</span>
@@ -139,6 +142,7 @@ export default function Explore() {
                 muted={heroMuted}
                 loop
                 playsInline
+                autoPlay
                 preload="auto"
                 crossOrigin="anonymous"
                 disablePictureInPicture
@@ -178,7 +182,15 @@ export default function Explore() {
             <span className="explore-label">Our Collection</span>
             <h2 className="explore-section-title">Browse by Category</h2>
           </div>
-          <CategoryGrid onCategorySelect={(cat) => navigate(`/explore/${cat}`)} limit={3} />
+          <CategoryGrid
+            onCategorySelect={(cat) => {
+              const scrollY = window.scrollY;
+              window.sessionStorage.setItem('explore_scroll_y', String(scrollY));
+              window.sessionStorage.setItem('explore_return_to_categories', '1');
+              navigate(`/explore/${cat}`);
+            }}
+            limit={3}
+          />
         </div>
       </section>
 

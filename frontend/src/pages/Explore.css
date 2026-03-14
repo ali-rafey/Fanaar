@@ -236,6 +236,7 @@
 
 @media (max-width: 768px) {
   .explore-hero-content { padding: 0 1.5rem; }
+  .explore-process-section { margin-top: 2rem; }
   .explore-categories-inner { padding: 0 1rem; }
   .explore-cat-header { padding: 1.5rem 1rem; }
   .explore-cat-content { padding: 1.5rem 1rem; }
