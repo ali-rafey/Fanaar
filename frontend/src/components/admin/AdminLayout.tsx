@@ -1,69 +1,118 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { api, setAuthToken } from '@/api/client';
-import { LayoutDashboard, Package, LogOut, FolderOpen, Sliders, Menu, X, FileText } from 'lucide-react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { useNavigate, useLocation, Outlet, useOutletContext } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, getAuthToken, setAuthToken } from '@/api/client';
+import { FileText, FolderOpen, Layers, LayoutDashboard, LogOut, Menu, Package, Sliders, X } from 'lucide-react';
 import './AdminLayout.css';
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
+interface AdminHeaderState {
   title: string;
   actions?: React.ReactNode;
 }
 
-export function AdminLayout({ children, title, actions }: AdminLayoutProps) {
+interface AdminHeaderContextValue {
+  setHeader: (next: AdminHeaderState) => void;
+}
+
+export function useAdminHeader(title: string, actions?: React.ReactNode, deps: readonly unknown[] = []) {
+  const { setHeader } = useOutletContext<AdminHeaderContextValue>();
+
+  useLayoutEffect(() => {
+    setHeader({ title, actions });
+    return () => {
+      setHeader({ title: 'Admin', actions: undefined });
+    };
+  }, [setHeader, title, ...deps]);
+}
+
+const defaultTitles: Record<string, string> = {
+  '/123admin/articles': 'Articles',
+  '/123admin/blogs': 'Blogs',
+  '/123admin/categories': 'Categories',
+  '/123admin/dashboard': 'Dashboard',
+  '/123admin/extra': 'Extra',
+  '/123admin/specs': 'Specifications',
+};
+
+export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [header, setHeader] = useState<AdminHeaderState>({
+    title: defaultTitles[location.pathname] || 'Admin',
+  });
+
+  const sessionQuery = useQuery({
+    queryKey: ['admin-session'],
+    queryFn: () => api.admin.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: false,
+  });
+
+  const clearSession = () => {
+    setAuthToken(null);
+    queryClient.removeQueries({ queryKey: ['admin-session'] });
+  };
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
-  const checkAuth = async () => {
-    try {
-      const data = await api.admin.me();
-      if (!data?.isAdmin) {
-        setAuthToken(null);
-        navigate('/123admin');
-        return;
-      }
-      setLoading(false);
-    } catch (_) {
-      setAuthToken(null);
-      navigate('/123admin');
+  useEffect(() => {
+    if (!sessionQuery.isSuccess || sessionQuery.data?.isAdmin) return;
+    clearSession();
+    navigate('/123admin', { replace: true });
+  }, [navigate, sessionQuery.data, sessionQuery.isSuccess]);
+
+  useEffect(() => {
+    if (!sessionQuery.isError) return;
+    const status = (sessionQuery.error as { status?: number }).status;
+    if (status === 401 || status === 403 || !getAuthToken()) {
+      clearSession();
+      navigate('/123admin', { replace: true });
     }
-  };
+  }, [navigate, sessionQuery.error, sessionQuery.isError]);
 
   const handleLogout = async () => {
-    try { await api.admin.signOut(); } catch (_) {}
-    setAuthToken(null);
-    navigate('/123admin');
-  };
-
-  const handleNavClick = (path: string) => {
-    navigate(path);
-    setMobileMenuOpen(false);
+    try {
+      await api.admin.signOut();
+    } catch (_) {
+      // Best effort sign-out: local session is still cleared below.
+    }
+    clearSession();
+    navigate('/123admin', { replace: true });
   };
 
   const navItems = [
     { path: '/123admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/123admin/articles', label: 'Articles', icon: Package },
     { path: '/123admin/blogs', label: 'Blogs', icon: FileText },
     { path: '/123admin/categories', label: 'Categories', icon: FolderOpen },
+    { path: '/123admin/specs', label: 'Specifications', icon: Layers },
     { path: '/123admin/extra', label: 'Extra', icon: Sliders },
   ];
 
-  if (loading) {
+  const authStatus = (sessionQuery.error as { status?: number } | null)?.status;
+  const hasStoredSession = !!getAuthToken();
+  const isBlockingAuthCheck =
+    sessionQuery.isPending || (!sessionQuery.data?.isAdmin && !hasStoredSession && !sessionQuery.isError);
+
+  if (isBlockingAuthCheck) {
     return <div className="admin-layout">Loading...</div>;
+  }
+
+  if (sessionQuery.isError && (authStatus === 401 || authStatus === 403 || !hasStoredSession)) {
+    return <div className="admin-layout">Redirecting...</div>;
   }
 
   return (
     <div className="admin-layout">
-      {/* Mobile Header */}
       <header className="admin-mobile-header">
         <button
           className="admin-mobile-menu-btn"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => setMobileMenuOpen((open) => !open)}
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X /> : <Menu />}
@@ -71,7 +120,6 @@ export function AdminLayout({ children, title, actions }: AdminLayoutProps) {
         <h1 className="admin-mobile-brand">Admin Panel</h1>
       </header>
 
-      {/* Overlay */}
       {mobileMenuOpen && (
         <div
           className="admin-mobile-overlay"
@@ -81,7 +129,7 @@ export function AdminLayout({ children, title, actions }: AdminLayoutProps) {
 
       <aside className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <h1 className="admin-sidebar-title">Fabric Mill</h1>
+          <h1 className="admin-sidebar-title">Ali Anees</h1>
           <span className="admin-sidebar-subtitle">Admin Panel</span>
         </div>
 
@@ -90,7 +138,7 @@ export function AdminLayout({ children, title, actions }: AdminLayoutProps) {
             {navItems.map((item) => (
               <li key={item.path}>
                 <button
-                  onClick={() => handleNavClick(item.path)}
+                  onClick={() => navigate(item.path)}
                   className={`admin-nav-item ${location.pathname === item.path ? 'active' : ''}`}
                 >
                   <item.icon />
@@ -111,11 +159,11 @@ export function AdminLayout({ children, title, actions }: AdminLayoutProps) {
 
       <main className="admin-main">
         <header className="admin-header">
-          <h1 className="admin-header-title">{title}</h1>
-          {actions && <div className="admin-header-actions">{actions}</div>}
+          <h1 className="admin-header-title">{header.title}</h1>
+          {header.actions ? <div className="admin-header-actions">{header.actions}</div> : null}
         </header>
         <div className="admin-content">
-          {children}
+          <Outlet context={{ setHeader }} />
         </div>
       </main>
     </div>

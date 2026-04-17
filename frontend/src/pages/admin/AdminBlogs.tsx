@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { Plus, Pencil, Trash2, Upload, X, FileText } from 'lucide-react';
 import './AdminArticles.css';
 
@@ -93,6 +93,7 @@ export default function AdminBlogs() {
             queryClient.invalidateQueries({ queryKey: ['admin-blogs'] });
             queryClient.invalidateQueries({ queryKey: ['all-blogs'] });
             queryClient.invalidateQueries({ queryKey: ['blogs'] });
+            queryClient.invalidateQueries({ queryKey: ['home-page'] });
             resetForm();
             setSaving(false);
         },
@@ -110,25 +111,27 @@ export default function AdminBlogs() {
             queryClient.invalidateQueries({ queryKey: ['admin-blogs'] });
             queryClient.invalidateQueries({ queryKey: ['all-blogs'] });
             queryClient.invalidateQueries({ queryKey: ['blogs'] });
+            queryClient.invalidateQueries({ queryKey: ['home-page'] });
         },
     });
 
     const isFormOpen = showAdd || editingBlog;
 
+    const headerActions = (
+        <button className="admin-add-btn" onClick={() => { resetForm(); setShowAdd(true); }}>
+            <Plus /> Add Blog
+        </button>
+    );
+
+    useAdminHeader('Blogs', headerActions);
+
     return (
-        <AdminLayout
-            title="Blogs"
-            actions={
-                <button className="admin-add-btn" onClick={() => { resetForm(); setShowAdd(true); }}>
-                    <Plus /> Add Blog
-                </button>
-            }
-        >
+        <>
             {isLoading ? (
                 <p>Loading...</p>
             ) : !blogs.length ? (
                 <div className="admin-empty">
-                    <FileText style={{ width: '3rem', height: '3rem', color: 'hsl(30, 8%, 45%)' }} />
+                    <FileText style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
                     <p>No blogs yet.</p>
                 </div>
             ) : (
@@ -211,10 +214,10 @@ export default function AdminBlogs() {
                                         {imagePreview ? (
                                             <div style={{ position: 'relative' }}>
                                                 <img src={imagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '16rem', objectFit: 'cover' }} />
-                                                <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(0,0%,0%,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
+                                                <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
                                             </div>
                                         ) : (
-                                            <button type="button" className="admin-add-btn" onClick={() => fileRef.current?.click()} style={{ background: 'hsl(35, 12%, 92%)', color: 'hsl(30, 10%, 12%)' }}>
+                                            <button type="button" className="admin-add-btn" onClick={() => fileRef.current?.click()}>
                                                 <Upload /> Upload Blog Image
                                             </button>
                                         )}
@@ -233,6 +236,6 @@ export default function AdminBlogs() {
                     </div>
                 </div>
             )}
-        </AdminLayout>
+        </>
     );
 }

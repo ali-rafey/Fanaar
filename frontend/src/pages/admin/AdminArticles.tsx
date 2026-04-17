@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { ArticleForm } from '@/components/admin/ArticleForm';
 import { FabricArticle } from '@/types/fabric';
 import { Plus, Pencil, Trash2, Package } from 'lucide-react';
@@ -48,28 +48,29 @@ export default function AdminArticles() {
     }
   };
 
+  const headerActions = (
+    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      {categoryFilter && (
+        <button className="btn-cancel-modal" onClick={() => setSearchParams({})}>
+          Clear Filter: {categoryFilter}
+        </button>
+      )}
+      <button className="admin-add-btn" onClick={() => { setEditingArticle(null); setShowForm(true); }}>
+        <Plus />
+        Add Article
+      </button>
+    </div>
+  );
+
+  useAdminHeader('Articles', headerActions, [categoryFilter]);
+
   return (
-    <AdminLayout
-      title="Articles"
-      actions={
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {categoryFilter && (
-            <button className="btn-cancel-modal" onClick={() => setSearchParams({})}>
-              Clear Filter: {categoryFilter}
-            </button>
-          )}
-          <button className="admin-add-btn" onClick={() => { setEditingArticle(null); setShowForm(true); }}>
-            <Plus />
-            Add Article
-          </button>
-        </div>
-      }
-    >
+    <>
       {isLoading ? (
         <p>Loading...</p>
       ) : !articles?.length ? (
         <div className="admin-empty">
-          <Package style={{ width: '3rem', height: '3rem', color: 'hsl(30, 8%, 45%)' }} />
+          <Package style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
           <p>No articles yet. Add your first fabric article.</p>
         </div>
       ) : (
@@ -133,6 +134,6 @@ export default function AdminArticles() {
           onClose={() => setShowForm(false)}
         />
       )}
-    </AdminLayout>
+    </>
   );
 }

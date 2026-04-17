@@ -3,15 +3,30 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import './BlogsSection.css';
 
-export function BlogsSection() {
+interface BlogSummary {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  tag: string | null;
+  image_url: string | null;
+  created_at: string;
+}
+
+interface BlogsSectionProps {
+  blogs?: BlogSummary[];
+}
+
+export function BlogsSection({ blogs: initialBlogs }: BlogsSectionProps) {
   const navigate = useNavigate();
 
   const { data: blogs = [] } = useQuery({
     queryKey: ['blogs'],
     queryFn: async () => {
       const data = await api.blogs.list({ limit: 4 });
-      return data;
+      return data as BlogSummary[];
     },
+    enabled: !initialBlogs,
+    initialData: initialBlogs,
   });
 
   return (

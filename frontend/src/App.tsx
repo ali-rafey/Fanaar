@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SplashScreen } from "@/components/SplashScreen";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import Explore from "./pages/Explore";
 import Categories from "./pages/Categories";
 import About from "./pages/About";
@@ -21,7 +22,13 @@ import AdminExtra from "./pages/admin/AdminExtra";
 import AdminSpecs from "./pages/admin/AdminSpecs";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   // Start with splash visible; after mount we skip only for admin or returning visitors
@@ -73,12 +80,14 @@ const App = () => {
 
             {/* Admin pages */}
             <Route path="/123admin" element={<AdminLogin />} />
-            <Route path="/123admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/123admin/blogs" element={<AdminBlogs />} />
-            <Route path="/123admin/articles" element={<AdminArticles />} />
-            <Route path="/123admin/categories" element={<AdminCategories />} />
-            <Route path="/123admin/extra" element={<AdminExtra />} />
-            <Route path="/123admin/specs" element={<AdminSpecs />} />
+            <Route path="/123admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="blogs" element={<AdminBlogs />} />
+              <Route path="articles" element={<AdminArticles />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="extra" element={<AdminExtra />} />
+              <Route path="specs" element={<AdminSpecs />} />
+            </Route>
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

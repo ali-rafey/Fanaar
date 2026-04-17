@@ -34,7 +34,14 @@ const getUserClient = (token) =>
   });
 
 const app = express();
+app.disable('x-powered-by');
 app.use(cors({ origin: true, credentials: true }));
+app.use((_, res, next) => {
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  next();
+});
 app.use(express.json({ limit: '6mb' }));
 
 const upload = multer({
@@ -46,6 +53,28 @@ const ok = (res, data) => res.json(data ?? {});
 const fail = (res, status, message) => res.status(status).json({ error: message });
 const REFRESH_COOKIE = 'fanaar_admin_refresh';
 const isProd = process.env.NODE_ENV === 'production';
+const HOME_CACHE_CONTROL = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+const allowedUploadMimeTypes = new Set([
+  'image/avif',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+]);
+
+const setHomeCacheHeaders = (res) => {
+  res.setHeader('Cache-Control', HOME_CACHE_CONTROL);
+};
+
+const isSafeStoragePath = (value) =>
+  typeof value === 'string' &&
+  value.length <= 160 &&
+  !value.startsWith('/') &&
+  !value.includes('..') &&
+  /^[a-z0-9/_-]+\.[a-z0-9]+$/i.test(value);
 
 const getRefreshToken = (req) => {
   const cookieHeader = req.headers.cookie || '';
@@ -204,6 +233,48 @@ app.get('/site-settings', async (req, res) => {
   const { data, error } = await supabasePublic.from('site_settings').select('*').in('key', keys);
   if (error) return failWith(res, 500, error, 'site-settings');
   return ok(res, data);
+});
+
+app.get('/home', async (_, res) => {
+  const [categoriesResult, blogsResult, settingsResult] = await Promise.all([
+    supabasePublic.from('categories').select('*').order('name'),
+    supabasePublic.from('blogs').select('*').order('created_at', { ascending: false }).limit(4),
+    supabasePublic
+      .from('site_settings')
+      .select('*')
+      .in('key', ['hero_media', 'hero_video_url', 'hero_image_url', 'hero_video_focus_x', 'hero_video_focus_y', 'process_section']),
+  ]);
+
+  if (categoriesResult.error) {
+    return failWith(res, 500, categoriesResult.error, 'home-categories');
+  }
+  if (blogsResult.error) {
+    return failWith(res, 500, blogsResult.error, 'home-blogs');
+  }
+  if (settingsResult.error) {
+    return failWith(res, 500, settingsResult.error, 'home-settings');
+  }
+
+  const settingsMap = new Map((settingsResult.data || []).map((entry) => [entry.key, entry]));
+
+  let processSection = [];
+  try {
+    processSection = JSON.parse(settingsMap.get('process_section')?.value || '[]');
+  } catch (_) {
+    processSection = [];
+  }
+
+  setHomeCacheHeaders(res);
+  return ok(res, {
+    categories: categoriesResult.data || [],
+    blogs: blogsResult.data || [],
+    hero_media: settingsMap.get('hero_media') || null,
+    hero_video_url: settingsMap.get('hero_video_url')?.value || null,
+    hero_image_url: settingsMap.get('hero_image_url')?.value || null,
+    hero_video_focus_x: settingsMap.get('hero_video_focus_x')?.value || null,
+    hero_video_focus_y: settingsMap.get('hero_video_focus_y')?.value || null,
+    process_section: processSection,
+  });
 });
 
 app.post('/auth/sign-in', async (req, res) => {
@@ -434,10 +505,18 @@ app.post('/admin/upload', requireAdmin, upload.single('file'), async (req, res) 
   const { path } = req.body || {};
   if (!file) return fail(res, 400, 'Missing file');
   if (!path) return fail(res, 400, 'Missing path');
+  if (!isSafeStoragePath(path)) return fail(res, 400, 'Invalid path');
+  if (!allowedUploadMimeTypes.has(file.mimetype)) {
+    return fail(res, 400, 'Unsupported file type');
+  }
 
   const { error } = await req.adminClient.storage
     .from('fabric-images')
-    .upload(path, file.buffer, { contentType: file.mimetype, upsert: true });
+    .upload(path, file.buffer, {
+      cacheControl: '31536000',
+      contentType: file.mimetype,
+      upsert: true,
+    });
   if (error) return fail(res, 400, error.message);
 
   const { data } = req.adminClient.storage.from('fabric-images').getPublicUrl(path);

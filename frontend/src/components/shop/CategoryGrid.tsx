@@ -7,16 +7,19 @@ interface CategoryGridProps {
   onCategorySelect: (category: FabricCategory) => void;
   /** Limit number of categories shown (for homepage) */
   limit?: number;
+  categories?: Category[];
 }
 
 /* Displays fabric categories as portrait cards */
-export function CategoryGrid({ onCategorySelect, limit }: CategoryGridProps) {
+export function CategoryGrid({ onCategorySelect, limit, categories: initialCategories }: CategoryGridProps) {
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const data = await api.categories.list();
       return data as Category[];
     },
+    enabled: !initialCategories,
+    initialData: initialCategories,
   });
 
   /* Apply limit if provided */

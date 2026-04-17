@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import './ProcessSection.css';
 
+interface ProcessSectionEntry {
+  image?: string;
+}
+
 const defaultSteps = [
   {
     key: 'sourcing',
@@ -38,7 +42,11 @@ const defaultSteps = [
   },
 ];
 
-export function ProcessSection() {
+interface ProcessSectionProps {
+  processSection?: ProcessSectionEntry[];
+}
+
+export function ProcessSection({ processSection: initialProcessSection }: ProcessSectionProps) {
   const { data: processSection } = useQuery({
     queryKey: ['process-section'],
     queryFn: async () => {
@@ -46,17 +54,19 @@ export function ProcessSection() {
       const value = (data || []).find((r: any) => r.key === 'process_section')?.value;
       if (!value) return [];
       try {
-        return JSON.parse(value) as { image?: string }[];
+        return JSON.parse(value) as ProcessSectionEntry[];
       } catch {
         return [];
       }
     },
+    enabled: !initialProcessSection,
+    initialData: initialProcessSection,
   });
 
   const steps = useMemo(() => {
     return defaultSteps.map((step, i) => ({
       ...step,
-      image: (processSection?.[i] as { image?: string } | undefined)?.image || step.image,
+      image: processSection?.[i]?.image || step.image,
     }));
   }, [processSection]);
 

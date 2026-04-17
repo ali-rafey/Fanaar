@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { Package, Layers, CheckCircle } from 'lucide-react';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
+  useAdminHeader('Dashboard');
+
   /* Fetch dashboard stats */
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
@@ -21,19 +23,16 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <AdminLayout title="Dashboard">
-      {/* Stats */}
-      <div className="admin-stats">
-        {statCards.map((stat) => (
-          <div key={stat.label} className="stat-card">
-            <div className="stat-card-header">
-              <span className="stat-card-label">{stat.label}</span>
-              <div className="stat-card-icon"><stat.icon /></div>
-            </div>
-            <div className="stat-card-value">{stat.value}</div>
+    <div className="admin-stats">
+      {statCards.map((stat) => (
+        <div key={stat.label} className="stat-card">
+          <div className="stat-card-header">
+            <span className="stat-card-label">{stat.label}</span>
+            <div className="stat-card-icon"><stat.icon /></div>
           </div>
-        ))}
-      </div>
-    </AdminLayout>
+          <div className="stat-card-value">{stat.value}</div>
+        </div>
+      ))}
+    </div>
   );
 }

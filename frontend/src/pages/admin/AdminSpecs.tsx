@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { FabricSpecs } from '@/types/fabric';
 import { Pencil, FileText } from 'lucide-react';
 import { useState } from 'react';
@@ -13,6 +13,8 @@ interface SpecsWithArticle extends FabricSpecs {
 export default function AdminSpecs() {
   const queryClient = useQueryClient();
   const [editingSpec, setEditingSpec] = useState<SpecsWithArticle | null>(null);
+
+  useAdminHeader('Specifications');
 
   const { data: specs, isLoading } = useQuery({
     queryKey: ['admin-specs'],
@@ -34,12 +36,12 @@ export default function AdminSpecs() {
   });
 
   return (
-    <AdminLayout title="Specifications">
+    <>
       {isLoading ? (
         <p>Loading...</p>
       ) : !specs?.length ? (
         <div className="admin-empty">
-          <FileText style={{ width: '3rem', height: '3rem', color: 'hsl(30, 8%, 45%)' }} />
+          <FileText style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
           <p>No specifications yet. Add specs through article management.</p>
         </div>
       ) : (
@@ -124,6 +126,6 @@ export default function AdminSpecs() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 }

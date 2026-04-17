@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { Category } from '@/types/fabric';
 import { Plus, Pencil, Trash2, Upload, X, FolderOpen, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -47,6 +47,7 @@ export default function AdminCategories() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['home-page'] });
       setShowAdd(false);
       setNewName('');
       setNewImageFile(null);
@@ -66,6 +67,7 @@ export default function AdminCategories() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['home-page'] });
       setEditingCategory(null);
       setSaving(false);
     },
@@ -76,7 +78,10 @@ export default function AdminCategories() {
     mutationFn: async (id: string) => {
       await api.categories.remove(id);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['home-page'] });
+    },
   });
 
   const startEdit = (cat: Category) => {
@@ -86,20 +91,21 @@ export default function AdminCategories() {
     setEditImageFile(null);
   };
 
+  const headerActions = (
+    <button className="admin-add-btn" onClick={() => setShowAdd(true)}>
+      <Plus /> Add Category
+    </button>
+  );
+
+  useAdminHeader('Categories', headerActions);
+
   return (
-    <AdminLayout
-      title="Categories"
-      actions={
-        <button className="admin-add-btn" onClick={() => setShowAdd(true)}>
-          <Plus /> Add Category
-        </button>
-      }
-    >
+    <>
       {isLoading ? (
         <p>Loading...</p>
       ) : !categories.length ? (
         <div className="admin-empty">
-          <FolderOpen style={{ width: '3rem', height: '3rem', color: 'hsl(30, 8%, 45%)' }} />
+          <FolderOpen style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
           <p>No categories yet.</p>
         </div>
       ) : (
@@ -125,7 +131,7 @@ export default function AdminCategories() {
                   </td>
                   <td style={{ textTransform: 'capitalize' }}>{cat.name}</td>
                   <td>
-                    <Link to={`/123admin/articles?category=${encodeURIComponent(cat.name)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'hsl(30, 8%, 45%)', textDecoration: 'none', background: 'hsl(30, 10%, 96%)', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.875rem' }}>
+                    <Link to={`/123admin/articles?category=${encodeURIComponent(cat.name)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'hsl(220 12% 32%)', textDecoration: 'none', background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 18% 95%) 100%)', border: '1px solid hsl(220 18% 87%)', padding: '0.5rem 0.75rem', borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600 }}>
                       <FileText size={16} /> View Articles
                     </Link>
                   </td>
@@ -164,10 +170,10 @@ export default function AdminCategories() {
                     {newImagePreview ? (
                       <div style={{ position: 'relative' }}>
                         <img src={newImagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '12rem', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => { setNewImageFile(null); setNewImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(0,0%,0%,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
+                        <button type="button" onClick={() => { setNewImageFile(null); setNewImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
                       </div>
                     ) : (
-                      <button type="button" className="admin-add-btn" onClick={() => newFileRef.current?.click()} style={{ background: 'hsl(35, 12%, 92%)', color: 'hsl(30, 10%, 12%)' }}>
+                      <button type="button" className="admin-add-btn" onClick={() => newFileRef.current?.click()}>
                         <Upload /> Upload Image
                       </button>
                     )}
@@ -207,10 +213,10 @@ export default function AdminCategories() {
                     {editImagePreview ? (
                       <div style={{ position: 'relative' }}>
                         <img src={editImagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '12rem', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => { setEditImageFile(null); setEditImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(0,0%,0%,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
+                        <button type="button" onClick={() => { setEditImageFile(null); setEditImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
                       </div>
                     ) : (
-                      <button type="button" className="admin-add-btn" onClick={() => editFileRef.current?.click()} style={{ background: 'hsl(35, 12%, 92%)', color: 'hsl(30, 10%, 12%)' }}>
+                      <button type="button" className="admin-add-btn" onClick={() => editFileRef.current?.click()}>
                         <Upload /> Upload Image
                       </button>
                     )}
@@ -229,6 +235,6 @@ export default function AdminCategories() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 }

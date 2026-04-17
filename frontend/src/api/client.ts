@@ -1,8 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
 type ApiOptions = Omit<RequestInit, 'body'> & { body?: unknown };
+type ApiError = Error & { status?: number };
 
-const getAuthToken = () => {
+type SiteSettingRecord = {
+  key: string;
+  value: string | null;
+  media_type?: string | null;
+};
+
+export const getAuthToken = () => {
   if (typeof window === 'undefined') return null;
   return window.localStorage.getItem('admin_token');
 };
@@ -36,7 +43,7 @@ const request = async (path: string, options: ApiOptions = {}) => {
       const data = await res.json();
       if (data?.error) message = data.error;
     } catch (_) {}
-    const err = new Error(message) as Error & { status?: number };
+    const err = new Error(message) as ApiError;
     err.status = res.status;
     throw err;
   }
@@ -51,7 +58,7 @@ const refreshAuthToken = async () => {
     credentials: 'include',
   });
   if (!res.ok) {
-    const err = new Error('Not authenticated') as Error & { status?: number };
+    const err = new Error('Not authenticated') as ApiError;
     err.status = res.status;
     throw err;
   }
@@ -61,14 +68,18 @@ const refreshAuthToken = async () => {
   return data.token as string;
 };
 
+const getValidAuthToken = async () => {
+  const existingToken = getAuthToken();
+  if (existingToken) return existingToken;
+  return refreshAuthToken();
+};
+
 const authRequest = async (path: string, options: ApiOptions = {}) => {
-  let token = getAuthToken();
-  if (!token) {
-    try {
-      token = await refreshAuthToken();
-    } catch (_) {
-      throw new Error('Not authenticated');
-    }
+  let token: string;
+  try {
+    token = await getValidAuthToken();
+  } catch (_) {
+    throw new Error('Not authenticated');
   }
   const headers = {
     ...(options.headers as Record<string, string> | undefined),
@@ -92,6 +103,46 @@ const authRequest = async (path: string, options: ApiOptions = {}) => {
 };
 
 export const api = {
+  home: {
+    load: async () => {
+      try {
+        return await request('/home');
+      } catch (error) {
+        const err = error as ApiError;
+        if (err.status && err.status !== 404 && err.status !== 500) {
+          throw err;
+        }
+
+        const [categories, blogs, settings] = await Promise.all([
+          request('/categories'),
+          request('/blogs?limit=4'),
+          request('/site-settings?keys=hero_media,hero_video_url,hero_image_url,hero_video_focus_x,hero_video_focus_y,process_section'),
+        ]);
+
+        const settingsMap = new Map(
+          ((settings as SiteSettingRecord[] | null) || []).map((entry) => [entry.key, entry])
+        );
+
+        let processSection: Array<{ image?: string }> = [];
+        try {
+          processSection = JSON.parse(settingsMap.get('process_section')?.value || '[]');
+        } catch (_) {
+          processSection = [];
+        }
+
+        return {
+          categories,
+          blogs,
+          hero_media: settingsMap.get('hero_media') || null,
+          hero_video_url: settingsMap.get('hero_video_url')?.value || null,
+          hero_image_url: settingsMap.get('hero_image_url')?.value || null,
+          hero_video_focus_x: settingsMap.get('hero_video_focus_x')?.value || null,
+          hero_video_focus_y: settingsMap.get('hero_video_focus_y')?.value || null,
+          process_section: processSection,
+        };
+      }
+    },
+  },
   categories: {
     list: () => request('/categories'),
     create: (payload: { name: string; image_url: string | null }) =>
@@ -150,23 +201,36 @@ export const api = {
     updateSpec: (id: string, payload: Record<string, unknown>) =>
       authRequest(`/admin/specs/${id}`, { method: 'PUT', body: payload }),
     upload: async (file: File, path: string) => {
-      const token = getAuthToken();
-      if (!token) throw new Error('Not authenticated');
+      let token: string;
+      try {
+        token = await getValidAuthToken();
+      } catch (_) {
+        throw new Error('Not authenticated');
+      }
       const form = new FormData();
       form.append('file', file);
       form.append('path', path);
-      const res = await fetch(`${API_BASE_URL}/admin/upload`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
+      const doUpload = async (accessToken: string) =>
+        fetch(`${API_BASE_URL}/admin/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: form,
+        });
+
+      let res = await doUpload(token);
+      if (res.status === 401) {
+        token = await refreshAuthToken();
+        res = await doUpload(token);
+      }
       if (!res.ok) {
         let message = `Upload failed (${res.status})`;
         try {
           const data = await res.json();
           if (data?.error) message = data.error;
         } catch (_) {}
-        throw new Error(message);
+        const err = new Error(message) as ApiError;
+        err.status = res.status;
+        throw err;
       }
       return res.json();
     },

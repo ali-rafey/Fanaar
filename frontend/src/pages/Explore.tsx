@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
@@ -40,50 +40,42 @@ export default function Explore() {
     requestAnimationFrame(() => requestAnimationFrame(restoreScroll));
   }, [category]);
 
-  const { data: heroSettings } = useQuery({
-    queryKey: ['site-settings-hero'],
-    queryFn: async () => {
-      const data = await api.settings.list([
-        'hero_media',
-        'hero_video_muted',
-        'hero_video_url',
-        'hero_image_url',
-        'hero_video_focus_x',
-        'hero_video_focus_y',
-      ]);
-      return data || [];
-    },
+  const { data: homeData } = useQuery({
+    queryKey: ['home-page'],
+    queryFn: async () => api.home.load(),
+    enabled: !category,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const heroMedia = heroSettings?.find((s: any) => s.key === 'hero_media');
-  const heroVideoMutedSetting = heroSettings?.find((s: any) => s.key === 'hero_video_muted');
-  const heroVideoUrlSetting = heroSettings?.find((s: any) => s.key === 'hero_video_url');
-  const heroImageUrlSetting = heroSettings?.find((s: any) => s.key === 'hero_image_url');
-  const heroFocusXSetting = heroSettings?.find((s: any) => s.key === 'hero_video_focus_x');
-  const heroFocusYSetting = heroSettings?.find((s: any) => s.key === 'hero_video_focus_y');
-
-  const legacyHeroUrl = (heroMedia?.value || '').trim();
-  const legacyHeroType = (heroMedia?.media_type || '').trim();
-  const legacyHeroMuted = heroVideoMutedSetting?.value !== '0';
-
-  const explicitVideoUrl = (heroVideoUrlSetting?.value || '').trim();
-  const explicitImageUrl = (heroImageUrlSetting?.value || '').trim();
-
-  const heroUrl = legacyHeroUrl || explicitVideoUrl || explicitImageUrl;
-  const inferredType = legacyHeroType || (explicitVideoUrl ? 'video' : (explicitImageUrl ? 'image' : 'image'));
-  const heroType = inferredType || (heroUrl?.endsWith('.mp4') ? 'video' : 'image');
-  const heroMuted = legacyHeroMuted ?? true;
-
-  const heroFocusX = Math.min(100, Math.max(0, parseFloat(heroFocusXSetting?.value ?? '50')));
-  const heroFocusY = Math.min(100, Math.max(0, parseFloat(heroFocusYSetting?.value ?? '50')));
+  const heroMediaUrl = (homeData?.hero_media?.value || homeData?.hero_video_url || '').trim();
+  const heroMediaType = (homeData?.hero_media?.media_type || '').trim();
+  const heroFallbackImageUrl = (homeData?.hero_image_url || '').trim();
+  const heroType =
+    heroMediaType === 'video'
+      ? 'video'
+      : heroMediaType === 'image'
+        ? 'image'
+        : heroMediaUrl.endsWith('.mp4') || heroMediaUrl.endsWith('.webm')
+          ? 'video'
+          : 'image';
+  const heroVideoUrl = heroType === 'video' ? heroMediaUrl : '';
+  const heroImageUrl = heroType === 'image' ? (heroMediaUrl || heroFallbackImageUrl) : heroFallbackImageUrl;
+  const heroFocusX = Math.min(100, Math.max(0, parseFloat(homeData?.hero_video_focus_x ?? '50')));
+  const heroFocusY = Math.min(100, Math.max(0, parseFloat(homeData?.hero_video_focus_y ?? '50')));
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [heroVideoErrored, setHeroVideoErrored] = useState(false);
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
 
-  // Ensure video plays as soon as it can (autoPlay handles most cases; this is fallback)
   useEffect(() => {
-    if (heroType !== 'video' || !heroUrl || !heroVideoRef.current) return;
+    setHeroVideoErrored(false);
+    setHeroVideoReady(false);
+  }, [heroVideoUrl]);
+
+  useEffect(() => {
+    if (heroType !== 'video' || !heroVideoUrl || !heroVideoRef.current || heroVideoErrored) return;
     const video = heroVideoRef.current;
-    video.muted = heroMuted;
+    video.muted = true;
     const attemptPlay = async () => {
       try {
         await video.play();
@@ -93,7 +85,7 @@ export default function Explore() {
       }
     };
     attemptPlay();
-  }, [heroUrl, heroType, heroMuted]);
+  }, [heroType, heroVideoErrored, heroVideoUrl]);
 
   // If a category is selected, show that category page
   if (category && categoryInfo) {
@@ -134,27 +126,42 @@ export default function Explore() {
     <MainLayout overlayNav>
       <section className="snap-section explore-hero">
         <div className="explore-hero-media">
-          {heroUrl ? (
-            heroType === 'video' ? (
-              <video
-                ref={heroVideoRef}
-                src={heroUrl}
-                muted={heroMuted}
-                loop
-                playsInline
-                autoPlay
-                preload="auto"
-                crossOrigin="anonymous"
-                disablePictureInPicture
-                controlsList="nodownload nofullscreen noremoteplayback"
-                className="explore-hero-video"
-                style={{
-                  ['--hero-focus-x' as any]: `${heroFocusX}%`,
-                  ['--hero-focus-y' as any]: `${heroFocusY}%`,
-                }}
-              />
+          {heroVideoUrl || heroImageUrl ? (
+            heroVideoUrl && !heroVideoErrored ? (
+              <>
+                {heroImageUrl ? (
+                  <img
+                    src={heroImageUrl}
+                    alt="Hero"
+                    className="explore-hero-poster"
+                    fetchPriority="high"
+                  />
+                ) : null}
+                <video
+                  ref={heroVideoRef}
+                  src={heroVideoUrl}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  preload="auto"
+                  poster={heroImageUrl || undefined}
+                  crossOrigin="anonymous"
+                  disablePictureInPicture
+                  controlsList="nodownload nofullscreen noremoteplayback"
+                  className="explore-hero-video"
+                  onLoadedData={() => setHeroVideoReady(true)}
+                  onCanPlay={() => setHeroVideoReady(true)}
+                  onError={() => setHeroVideoErrored(true)}
+                  style={{
+                    opacity: heroVideoReady ? 1 : 0,
+                    ['--hero-focus-x' as any]: `${heroFocusX}%`,
+                    ['--hero-focus-y' as any]: `${heroFocusY}%`,
+                  }}
+                />
+              </>
             ) : (
-              <img src={heroUrl} alt="Hero" className="explore-hero-img" />
+              <img src={heroImageUrl} alt="Hero" className="explore-hero-img" fetchPriority="high" />
             )
           ) : (
             <div className="explore-hero-fallback" />
@@ -173,7 +180,7 @@ export default function Explore() {
       </section>
 
       <section className="snap-section explore-process-section">
-        <ProcessSection />
+        <ProcessSection processSection={homeData?.process_section || undefined} />
       </section>
 
       <section className="snap-section explore-categories-section">
@@ -183,6 +190,7 @@ export default function Explore() {
             <h2 className="explore-section-title">Browse by Category</h2>
           </div>
           <CategoryGrid
+            categories={homeData?.categories || undefined}
             onCategorySelect={(cat) => {
               const scrollY = window.scrollY;
               window.sessionStorage.setItem('explore_scroll_y', String(scrollY));
@@ -195,7 +203,7 @@ export default function Explore() {
       </section>
 
       <section className="snap-section explore-blogs-section">
-        <BlogsSection />
+        <BlogsSection blogs={homeData?.blogs || undefined} />
       </section>
     </MainLayout>
   );

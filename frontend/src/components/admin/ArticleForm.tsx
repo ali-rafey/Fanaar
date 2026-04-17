@@ -122,7 +122,7 @@ export function ArticleForm({ article, onClose }: ArticleFormProps) {
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                   </div>
                 )}
-                {uploading && <p style={{ fontSize: '0.875rem', color: 'hsl(30,8%,45%)' }}>Uploading...</p>}
+                {uploading && <p style={{ fontSize: '0.875rem', color: 'hsl(220 10% 46%)' }}>Uploading...</p>}
               </div>
               <div className="form-group full-width">
                 <label className="form-label">Article Name</label>

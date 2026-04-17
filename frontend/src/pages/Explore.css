@@ -22,11 +22,17 @@
 }
 
 .explore-hero-img,
+.explore-hero-poster,
 .explore-hero-video,
 .explore-hero-iframe {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.explore-hero-poster {
+  position: absolute;
+  inset: 0;
 }
 
 .explore-hero-iframe {
