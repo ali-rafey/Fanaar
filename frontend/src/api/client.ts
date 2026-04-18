@@ -208,6 +208,8 @@ const request = async <TResponse, TBody = unknown>(
     ...options,
     headers,
     body,
+    // Prevent CDN/browser revalidation returning 304 with no body.
+    cache: 'no-store',
   });
 
   if (!res.ok) {
@@ -234,6 +236,7 @@ const runTokenRefresh = async (): Promise<string> => {
   const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
     credentials: 'include',
+    cache: 'no-store',
   });
 
   if (!res.ok) {
