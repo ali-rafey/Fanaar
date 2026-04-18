@@ -1,11 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/api/client';
+import {
+  api,
+  type ProcessSectionEntry,
+  type SiteSettingRecord,
+} from '@/api/client';
 import { useAdminHeader } from '@/components/admin/AdminLayout';
 import { Upload, Image, Video, Layers } from 'lucide-react';
 import './AdminExtra.css';
 
 const PROCESS_STEP_KEYS = ['sourcing', 'purpose', 'testing', 'sampling'];
+
+interface AdminExtraSettings {
+  hero_media: SiteSettingRecord | undefined;
+  hero_image_url: SiteSettingRecord | undefined;
+  hero_video_focus_x: SiteSettingRecord | undefined;
+  hero_video_focus_y: SiteSettingRecord | undefined;
+  processSection: ProcessSectionEntry[];
+}
 
 const createPosterFromVideo = async (file: File) => {
   const objectUrl = URL.createObjectURL(file);
@@ -65,7 +77,7 @@ export default function AdminExtra() {
 
 
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading } = useQuery<AdminExtraSettings>({
     queryKey: ['admin-extra-settings'],
     queryFn: async () => {
       const data = await api.settings.list([
@@ -75,8 +87,8 @@ export default function AdminExtra() {
         'hero_video_focus_x',
         'hero_video_focus_y',
       ]);
-      const map = new Map((data || []).map((r: any) => [r.key, r]));
-      let processSection: { image?: string }[] = [];
+      const map = new Map(data.map((record) => [record.key, record]));
+      let processSection: ProcessSectionEntry[] = [];
       try {
         const raw = map.get('process_section')?.value;
         if (raw) processSection = JSON.parse(raw);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
@@ -66,6 +66,11 @@ export default function Explore() {
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [heroVideoErrored, setHeroVideoErrored] = useState(false);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const heroVideoStyle: CSSProperties & Record<'--hero-focus-x' | '--hero-focus-y', string> = {
+    opacity: heroVideoReady ? 1 : 0,
+    '--hero-focus-x': `${heroFocusX}%`,
+    '--hero-focus-y': `${heroFocusY}%`,
+  };
 
   useEffect(() => {
     setHeroVideoErrored(false);
@@ -153,11 +158,7 @@ export default function Explore() {
                   onLoadedData={() => setHeroVideoReady(true)}
                   onCanPlay={() => setHeroVideoReady(true)}
                   onError={() => setHeroVideoErrored(true)}
-                  style={{
-                    opacity: heroVideoReady ? 1 : 0,
-                    ['--hero-focus-x' as any]: `${heroFocusX}%`,
-                    ['--hero-focus-y' as any]: `${heroFocusY}%`,
-                  }}
+                  style={heroVideoStyle}
                 />
               </>
             ) : (

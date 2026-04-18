@@ -9,6 +9,9 @@ type FeedbackState =
   | { type: 'success'; message: string }
   | null;
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Something went wrong';
+
 export default function AdminLogin() {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,8 +34,8 @@ export default function AdminLogin() {
         setAuthToken(data.token);
         navigate('/123admin/dashboard');
       }
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message });
+    } catch (error) {
+      setFeedback({ type: 'error', message: getErrorMessage(error) });
     } finally {
       setLoading(false);
     }

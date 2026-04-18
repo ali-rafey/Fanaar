@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/api/client';
+import { api, type SiteSettingRecord } from '@/api/client';
 import './ProcessSection.css';
 
 interface ProcessSectionEntry {
@@ -51,7 +51,7 @@ export function ProcessSection({ processSection: initialProcessSection }: Proces
     queryKey: ['process-section'],
     queryFn: async () => {
       const data = await api.settings.list(['process_section']);
-      const value = (data || []).find((r: any) => r.key === 'process_section')?.value;
+      const value = (data as SiteSettingRecord[]).find((record) => record.key === 'process_section')?.value;
       if (!value) return [];
       try {
         return JSON.parse(value) as ProcessSectionEntry[];

@@ -1,32 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/api/client';
+import { api, type AdminSpecRecord } from '@/api/client';
 import { useAdminHeader } from '@/components/admin/AdminLayout';
-import { FabricSpecs } from '@/types/fabric';
 import { Pencil, FileText } from 'lucide-react';
 import { useState } from 'react';
 import './AdminArticles.css';
 
-interface SpecsWithArticle extends FabricSpecs {
-  article?: { id: string; name: string };
-}
-
 export default function AdminSpecs() {
   const queryClient = useQueryClient();
-  const [editingSpec, setEditingSpec] = useState<SpecsWithArticle | null>(null);
+  const [editingSpec, setEditingSpec] = useState<AdminSpecRecord | null>(null);
 
   useAdminHeader('Specifications');
 
   const { data: specs, isLoading } = useQuery({
     queryKey: ['admin-specs'],
-    queryFn: async () => {
-      const data = await api.admin.specs();
-      return data as SpecsWithArticle[];
-    },
+    queryFn: () => api.admin.specs(),
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: Partial<FabricSpecs> & { id: string }) => {
-      const { id, ...updates } = data;
+    mutationFn: async (data: AdminSpecRecord) => {
+      const { id, article, ...updates } = data;
       await api.admin.updateSpec(id, updates);
     },
     onSuccess: () => {
