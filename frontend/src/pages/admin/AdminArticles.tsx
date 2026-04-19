@@ -49,9 +49,9 @@ export default function AdminArticles() {
   };
 
   const headerActions = (
-    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+    <div className="admin-toolbar">
       {categoryFilter && (
-        <button className="btn-cancel-modal" onClick={() => setSearchParams({})}>
+        <button className="admin-ghost-btn" onClick={() => setSearchParams({})}>
           Clear Filter: {categoryFilter}
         </button>
       )}
@@ -67,65 +67,99 @@ export default function AdminArticles() {
   return (
     <>
       {isLoading ? (
-        <p>Loading...</p>
+        <div className="admin-empty">
+          <p>Loading articles…</p>
+        </div>
       ) : !articles?.length ? (
         <div className="admin-empty">
-          <Package style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
+          <Package />
           <p>No articles yet. Add your first fabric article.</p>
         </div>
       ) : (
-        <div className="articles-table-wrap">
-          <table className="articles-table">
-            <thead>
-              <tr>
-                <th>Article</th>
-                <th>Category</th>
-                <th>Price (AED)</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {articles.map((article) => (
-                <tr key={article.id}>
-                  <td>
-                    <div className="article-row-name">
-                      {article.hero_image_url ? (
-                        <img src={article.hero_image_url} alt="" className="article-row-image" />
-                      ) : (
-                        <div className="article-row-placeholder">{article.name.charAt(0)}</div>
-                      )}
-                      <div className="article-row-info">
-                        <h4>{article.name}</h4>
-                        {article.description && <p>{article.description.substring(0, 50)}...</p>}
-                      </div>
-                    </div>
-                  </td>
-                  <td><span className="category-badge">{article.category}</span></td>
-                  <td>{Number(article.price_aed).toFixed(2)}</td>
-                  <td>
-                    <button
-                      className={`stock-toggle ${article.in_stock ? 'in-stock' : 'out-of-stock'}`}
-                      onClick={() => toggleStockMutation.mutate({ id: article.id, in_stock: !article.in_stock })}
-                    >
-                      {article.in_stock ? 'In Stock' : 'Out of Stock'}
-                    </button>
-                  </td>
-                  <td>
-                    <div className="article-actions">
-                      <button className="btn-icon" onClick={() => { setEditingArticle(article); setShowForm(true); }}>
-                        <Pencil />
-                      </button>
-                      <button className="btn-icon btn-danger" onClick={() => handleDelete(article.id, article.name)}>
-                        <Trash2 />
-                      </button>
-                    </div>
-                  </td>
+        <section className="admin-list-shell">
+          <div className="admin-table-wrap">
+            <table className="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Article</th>
+                  <th>Category</th>
+                  <th>Price (AED)</th>
+                  <th>Stock</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {articles.map((article) => (
+                  <tr key={article.id}>
+                    <td>
+                      <div className="admin-table-primary-cell">
+                        {article.hero_image_url ? (
+                          <img
+                            className="admin-table-thumb"
+                            src={article.hero_image_url}
+                            alt={article.name}
+                          />
+                        ) : (
+                          <div className="admin-table-thumb admin-table-thumb--placeholder">
+                            {article.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="admin-table-copy">
+                          <span className="admin-table-title">{article.name}</span>
+                          <span className="admin-table-subtitle">
+                            {article.description || 'No description added yet.'}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="admin-table-chip admin-table-chip--neutral">
+                        {article.category}
+                      </span>
+                    </td>
+                    <td className="admin-table-number">
+                      {Number(article.price_aed).toFixed(2)}
+                    </td>
+                    <td>
+                      <button
+                        className={`admin-pill ${article.in_stock ? 'admin-pill--active' : 'admin-pill--inactive'}`}
+                        onClick={() =>
+                          toggleStockMutation.mutate({
+                            id: article.id,
+                            in_stock: !article.in_stock,
+                          })
+                        }
+                      >
+                        {article.in_stock ? 'In Stock' : 'Out of Stock'}
+                      </button>
+                    </td>
+                    <td>
+                      <div className="admin-table-actions">
+                        <button
+                          className="admin-icon-btn"
+                          onClick={() => {
+                            setEditingArticle(article);
+                            setShowForm(true);
+                          }}
+                          aria-label={`Edit ${article.name}`}
+                        >
+                          <Pencil />
+                        </button>
+                        <button
+                          className="admin-icon-btn admin-icon-btn--danger"
+                          onClick={() => handleDelete(article.id, article.name)}
+                          aria-label={`Delete ${article.name}`}
+                        >
+                          <Trash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {showForm && (

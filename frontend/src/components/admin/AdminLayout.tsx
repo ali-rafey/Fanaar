@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet, useOutletContext } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, getAuthToken, setAuthToken } from '@/api/client';
-import { FileText, FolderOpen, Layers, LayoutDashboard, LogOut, Menu, Package, Sliders, X } from 'lucide-react';
+import { FileText, FolderOpen, LayoutDashboard, LogOut, Menu, Package, Sliders, X } from 'lucide-react';
 import './AdminLayout.css';
 
 interface AdminHeaderState {
@@ -31,7 +31,6 @@ const defaultTitles: Record<string, string> = {
   '/123admin/categories': 'Categories',
   '/123admin/dashboard': 'Dashboard',
   '/123admin/extra': 'Extra',
-  '/123admin/specs': 'Specifications',
 };
 
 export function AdminLayout() {
@@ -90,7 +89,6 @@ export function AdminLayout() {
     { path: '/123admin/articles', label: 'Articles', icon: Package },
     { path: '/123admin/blogs', label: 'Blogs', icon: FileText },
     { path: '/123admin/categories', label: 'Categories', icon: FolderOpen },
-    { path: '/123admin/specs', label: 'Specifications', icon: Layers },
     { path: '/123admin/extra', label: 'Extra', icon: Sliders },
   ];
 
@@ -100,11 +98,19 @@ export function AdminLayout() {
     sessionQuery.isPending || (!sessionQuery.data?.isAdmin && !hasStoredSession && !sessionQuery.isError);
 
   if (isBlockingAuthCheck) {
-    return <div className="admin-layout">Loading...</div>;
+    return (
+      <div className="admin-layout admin-layout--state">
+        <div className="admin-state-card">Loading admin workspace…</div>
+      </div>
+    );
   }
 
   if (sessionQuery.isError && (authStatus === 401 || authStatus === 403 || !hasStoredSession)) {
-    return <div className="admin-layout">Redirecting...</div>;
+    return (
+      <div className="admin-layout admin-layout--state">
+        <div className="admin-state-card">Redirecting to sign in…</div>
+      </div>
+    );
   }
 
   return (
@@ -117,7 +123,7 @@ export function AdminLayout() {
         >
           {mobileMenuOpen ? <X /> : <Menu />}
         </button>
-        <h1 className="admin-mobile-brand">Admin Panel</h1>
+        <h1 className="admin-mobile-brand">Fanaar Control</h1>
       </header>
 
       {mobileMenuOpen && (
@@ -129,8 +135,8 @@ export function AdminLayout() {
 
       <aside className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <h1 className="admin-sidebar-title">Ali Anees</h1>
-          <span className="admin-sidebar-subtitle">Admin Panel</span>
+          <h1 className="admin-sidebar-title">Fanaar</h1>
+          <span className="admin-sidebar-subtitle">Private Workspace</span>
         </div>
 
         <nav className="admin-sidebar-nav">

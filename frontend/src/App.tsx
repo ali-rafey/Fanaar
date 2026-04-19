@@ -19,7 +19,6 @@ import AdminBlogs from "./pages/admin/AdminBlogs";
 import AdminArticles from "./pages/admin/AdminArticles";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminExtra from "./pages/admin/AdminExtra";
-import AdminSpecs from "./pages/admin/AdminSpecs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -86,7 +85,6 @@ const App = () => {
               <Route path="articles" element={<AdminArticles />} />
               <Route path="categories" element={<AdminCategories />} />
               <Route path="extra" element={<AdminExtra />} />
-              <Route path="specs" element={<AdminSpecs />} />
             </Route>
 
             {/* 404 */}

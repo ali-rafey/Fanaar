@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: hsl(var(--background));
+  background: var(--page-bg);
 }
 
 /* Snap-scroll container for page sections */
@@ -35,14 +35,14 @@
 .site-footer {
   padding: 2rem;
   text-align: center;
-  border-top: 1px solid hsl(var(--border));
-  background: hsl(var(--foreground));
+  border-top: 1px solid var(--border-soft);
+  background: var(--page-bg);
   scroll-snap-align: end;
 }
 
 .site-footer p {
   font-size: 0.7rem;
-  color: hsl(var(--background) / 0.5);
+  color: var(--text-soft);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }

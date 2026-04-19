@@ -102,58 +102,82 @@ export default function AdminCategories() {
   return (
     <>
       {isLoading ? (
-        <p>Loading...</p>
+        <div className="admin-empty">
+          <p>Loading categories…</p>
+        </div>
       ) : !categories.length ? (
         <div className="admin-empty">
-          <FolderOpen style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
+          <FolderOpen />
           <p>No categories yet.</p>
         </div>
       ) : (
-        <div className="articles-table-wrap">
-          <table className="articles-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Articles</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((cat) => (
-                <tr key={cat.id}>
-                  <td>
-                    {cat.image_url ? (
-                      <img src={cat.image_url} alt={cat.name} className="article-row-image" />
-                    ) : (
-                      <div className="article-row-placeholder">{cat.name.charAt(0).toUpperCase()}</div>
-                    )}
-                  </td>
-                  <td style={{ textTransform: 'capitalize' }}>{cat.name}</td>
-                  <td>
-                    <Link to={`/123admin/articles?category=${encodeURIComponent(cat.name)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'hsl(220 12% 32%)', textDecoration: 'none', background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 18% 95%) 100%)', border: '1px solid hsl(220 18% 87%)', padding: '0.5rem 0.75rem', borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600 }}>
-                      <FileText size={16} /> View Articles
-                    </Link>
-                  </td>
-                  <td>
-                    <div className="article-actions">
-                      <button className="btn-icon" onClick={() => startEdit(cat)}><Pencil /></button>
-                      <button className="btn-icon btn-danger" onClick={() => {
-                        if (confirm(`Delete "${cat.name}"?`)) deleteMutation.mutate(cat.id);
-                      }}><Trash2 /></button>
-                    </div>
-                  </td>
+        <section className="admin-list-shell">
+          <div className="admin-table-wrap">
+            <table className="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Image</th>
+                  <th>Manage</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {categories.map((cat) => (
+                  <tr key={cat.id}>
+                    <td>
+                      <div className="admin-table-copy admin-table-copy--solo">
+                        <span className="admin-table-title admin-item-overlay-title--caps">{cat.name}</span>
+                        <span className="admin-table-subtitle">Used to group articles and drive storefront filtering.</span>
+                      </div>
+                    </td>
+                    <td>
+                      {cat.image_url ? (
+                        <img className="admin-table-thumb" src={cat.image_url} alt={cat.name} />
+                      ) : (
+                        <div className="admin-table-thumb admin-table-thumb--placeholder">
+                          {cat.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <Link to={`/123admin/articles?category=${encodeURIComponent(cat.name)}`} className="admin-link-btn">
+                        <FileText size={16} />
+                        View Articles
+                      </Link>
+                    </td>
+                    <td>
+                      <div className="admin-table-actions">
+                        <button
+                          className="admin-icon-btn"
+                          onClick={() => startEdit(cat)}
+                          aria-label={`Edit ${cat.name}`}
+                        >
+                          <Pencil />
+                        </button>
+                        <button
+                          className="admin-icon-btn admin-icon-btn--danger"
+                          onClick={() => {
+                            if (confirm(`Delete "${cat.name}"?`)) deleteMutation.mutate(cat.id);
+                          }}
+                          aria-label={`Delete ${cat.name}`}
+                        >
+                          <Trash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {/* Add Modal */}
       {showAdd && (
         <div className="modal-overlay" onClick={() => setShowAdd(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '28rem' }}>
+          <div className="modal-content modal-content--narrow" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Add Category</h2>
               <button className="modal-close" onClick={() => setShowAdd(false)}><X /></button>
@@ -168,9 +192,9 @@ export default function AdminCategories() {
                   <div className="form-group">
                     <label className="form-label">Image (optional)</label>
                     {newImagePreview ? (
-                      <div style={{ position: 'relative' }}>
-                        <img src={newImagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '12rem', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => { setNewImageFile(null); setNewImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
+                      <div className="admin-media-frame">
+                        <img src={newImagePreview} alt="" />
+                        <button type="button" className="admin-image-remove-btn" onClick={() => { setNewImageFile(null); setNewImagePreview(null); }}><X /></button>
                       </div>
                     ) : (
                       <button type="button" className="admin-add-btn" onClick={() => newFileRef.current?.click()}>
@@ -196,7 +220,7 @@ export default function AdminCategories() {
       {/* Edit Modal */}
       {editingCategory && (
         <div className="modal-overlay" onClick={() => setEditingCategory(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '28rem' }}>
+          <div className="modal-content modal-content--narrow" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Edit Category</h2>
               <button className="modal-close" onClick={() => setEditingCategory(null)}><X /></button>
@@ -211,9 +235,9 @@ export default function AdminCategories() {
                   <div className="form-group">
                     <label className="form-label">Image</label>
                     {editImagePreview ? (
-                      <div style={{ position: 'relative' }}>
-                        <img src={editImagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '12rem', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => { setEditImageFile(null); setEditImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer' }}><X /></button>
+                      <div className="admin-media-frame">
+                        <img src={editImagePreview} alt="" />
+                        <button type="button" className="admin-image-remove-btn" onClick={() => { setEditImageFile(null); setEditImagePreview(null); }}><X /></button>
                       </div>
                     ) : (
                       <button type="button" className="admin-add-btn" onClick={() => editFileRef.current?.click()}>

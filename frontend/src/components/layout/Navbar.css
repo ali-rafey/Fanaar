@@ -1,11 +1,13 @@
 /* ===================== Navbar – Transparent, Centered Brand ===================== */
 .navbar {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
   background: transparent;
+  border-bottom: none;
+  backdrop-filter: none;
   transition: background 0.4s ease;
 }
 
@@ -37,7 +39,7 @@
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
-  color: hsl(0 0% 100% / 0.75);
+  color: var(--heading-standard);
   text-transform: uppercase;
   background: none;
   border: none;
@@ -47,7 +49,7 @@
 }
 
 .navbar-link:hover {
-  color: hsl(0 0% 100%);
+  color: var(--heading-standard);
 }
 
 /* ---- Centered brand ---- */
@@ -60,7 +62,7 @@
 .navbar-brand-text {
   font-family: var(--font-display);
   font-size: 1.35rem;
-  color: hsl(0 0% 100%);
+  color: var(--heading-standard);
   letter-spacing: 0.25em;
 }
 
@@ -80,7 +82,7 @@
   display: block;
   width: 18px;
   height: 1.5px;
-  background: hsl(0 0% 100% / 0.8);
+  background: var(--heading-standard);
   transition: all 0.3s;
 }
 
@@ -88,7 +90,7 @@
 .navbar-mobile-overlay {
   position: fixed;
   inset: 0;
-  background: hsl(0 0% 0% / 0.5);
+  background: rgba(0, 0, 0, 0.18);
   z-index: 98;
   opacity: 0;
   pointer-events: none;
@@ -105,8 +107,8 @@
   top: 3.5rem;
   left: 0;
   right: 0;
-  background: hsl(0 0% 5% / 0.95);
-  backdrop-filter: blur(20px);
+  background: rgba(240, 240, 240, 0.96);
+  backdrop-filter: blur(18px);
   display: flex;
   flex-direction: column;
   padding: 1rem 0;
@@ -132,14 +134,26 @@
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 500;
-  color: hsl(0 0% 100% / 0.7);
+  color: var(--heading-standard);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   transition: color 0.2s;
 }
 
 .mobile-menu-item:hover {
-  color: hsl(0 0% 100%);
+  color: var(--heading-standard);
+}
+
+/* ---- Laptop / desktop: nav over hero uses overlay heading ---- */
+@media (min-width: 769px) {
+  .navbar-link,
+  .navbar-link:hover {
+    color: var(--overlay-heading);
+  }
+
+  .navbar-brand-text {
+    color: var(--overlay-heading);
+  }
 }
 
 /* ---- Mobile breakpoint ---- */

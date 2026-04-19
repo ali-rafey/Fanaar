@@ -35,16 +35,15 @@
 }
 
 .blog-card {
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
-  background: hsl(var(--card));
-  transition: border-color 0.3s, transform 0.3s;
+  border: 1px solid var(--border-soft);
+  border-radius: 1rem;
+  background: var(--surface-strong);
+  transition: transform 0.3s ease;
   cursor: pointer;
   overflow: hidden;
 }
 
 .blog-card:hover {
-  border-color: hsl(var(--foreground) / 0.3);
   transform: translateY(-2px);
 }
 
@@ -80,8 +79,8 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: hsl(var(--primary));
-  background: hsl(var(--primary) / 0.1);
+  color: var(--heading-standard);
+  background: rgba(229, 234, 211, 0.88);
   padding: 0.25rem 0.6rem;
   border-radius: 99px;
   font-weight: 500;

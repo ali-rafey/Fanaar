@@ -3,15 +3,15 @@
 /* ---- Hero ---- */
 .about-hero-section {
   position: relative;
-  background: hsl(var(--foreground));
+  background: var(--page-bg);
   overflow: hidden;
 }
 
 .about-hero-bg {
   position: absolute;
   inset: 0;
-  opacity: 0.12;
-  background: radial-gradient(ellipse at 30% 40%, hsl(0 0% 50%) 0%, transparent 60%);
+  opacity: 1;
+  background: radial-gradient(ellipse at 30% 40%, rgba(229, 234, 211, 0.78) 0%, transparent 60%);
 }
 
 .about-hero-content {
@@ -25,7 +25,7 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.25em;
-  color: hsl(0 0% 100% / 0.45);
+  color: var(--text-muted);
   display: block;
   margin-bottom: 1rem;
 }
@@ -33,13 +33,13 @@
 .about-hero-title {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 7vw, 4.5rem);
-  color: hsl(0 0% 100%);
+  color: var(--heading-standard);
   margin-bottom: 0.75rem;
 }
 
 .about-hero-subtitle {
   font-size: clamp(0.9rem, 2vw, 1.1rem);
-  color: hsl(0 0% 100% / 0.55);
+  color: var(--text-muted);
 }
 
 /* ---- Story section ---- */
@@ -81,8 +81,9 @@
 .about-stat-card {
   text-align: center;
   padding: 2rem 1rem;
-  background: hsl(var(--secondary));
-  border-radius: 0.75rem;
+  background: var(--surface-strong);
+  border-radius: 1rem;
+  border: 1px solid var(--border-soft);
   animation: cardSlideUp 0.5s ease-out both;
 }
 
@@ -103,7 +104,7 @@
 
 /* ---- Process section ---- */
 .about-process-section {
-  background: hsl(var(--secondary));
+  background: rgba(255, 255, 255, 0.18);
   padding: 3rem 0;
 }
 
@@ -131,9 +132,9 @@
 
 .about-process-card {
   padding: 1.5rem;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-soft);
+  border-radius: 1rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: cardSlideUp 0.5s ease-out both;
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { FabricArticle, FabricSpecs, Category } from '@/types/fabric';
-import { X, Upload, Trash2, Plus, Image } from 'lucide-react';
+import { X, Upload, Trash2 } from 'lucide-react';
 import './ArticleForm.css';
 
 interface ArticleFormProps {
@@ -10,30 +10,53 @@ interface ArticleFormProps {
   onClose: () => void;
 }
 
+type ArticleFormState = {
+  name: string;
+  description: string;
+  category: string;
+  price_aed: number;
+  price_usd: number | null;
+  price_pkr: number | null;
+  in_stock: boolean;
+  hero_image_url: string;
+};
+
+const createInitialFormData = (article?: FabricArticle | null): ArticleFormState => ({
+  name: article?.name || '',
+  description: article?.description || '',
+  category: article?.category || '',
+  price_aed: article?.price_aed ?? 0,
+  price_usd: article?.price_usd ?? null,
+  price_pkr: article?.price_pkr ?? null,
+  in_stock: article?.in_stock ?? true,
+  hero_image_url: article?.hero_image_url || '',
+});
+
+const createInitialSpecs = (article?: FabricArticle | null): FabricSpecs => ({
+  id: '',
+  article_id: article?.id || '',
+  gsm: 0,
+  tear_strength: '',
+  tensile_strength: '',
+  dye_class: '',
+  thread_count: '',
+});
+
+const parseOptionalPrice = (value: string): number | null => {
+  if (value.trim() === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 export function ArticleForm({ article, onClose }: ArticleFormProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: article?.name || '',
-    description: article?.description || '',
-    category: article?.category || '',
-    price_aed: article?.price_aed || 0,
-    price_usd: article?.price_usd || 0,
-    price_pkr: article?.price_pkr || 0,
-    in_stock: article?.in_stock ?? true,
-    hero_image_url: article?.hero_image_url || '',
-  });
-
-  const [specs, setSpecs] = useState<FabricSpecs>({
-    id: '',
-    article_id: article?.id || '',
-    gsm: 0,
-    tear_strength: '',
-    tensile_strength: '',
-    dye_class: '',
-    thread_count: '',
-  });
+  const [formData, setFormData] = useState<ArticleFormState>(() => createInitialFormData(article));
+  const [specs, setSpecs] = useState<FabricSpecs>(() => createInitialSpecs(article));
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(article?.hero_image_url || null);
 
@@ -56,30 +79,63 @@ export function ArticleForm({ article, onClose }: ArticleFormProps) {
   });
 
   useEffect(() => {
+    setFormData(createInitialFormData(article));
+    setSpecs(createInitialSpecs(article));
+    setImagePreview(article?.hero_image_url || null);
+  }, [article]);
+
+  useEffect(() => {
     if (existingSpecs) {
       setSpecs(existingSpecs);
     } else if (article?.id) {
-      setSpecs((prev) => ({ ...prev, article_id: article.id }));
+      setSpecs(createInitialSpecs(article));
     }
-  }, [existingSpecs, article?.id]);
+  }, [existingSpecs, article]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const articlePayload = {
+        ...formData,
+        description: formData.description.trim() || null,
+        hero_image_url: formData.hero_image_url.trim() || null,
+        price_usd: formData.price_usd,
+        price_pkr: formData.price_pkr,
+      };
+
+      const normalizedSpecs = {
+        gsm: specs.gsm,
+        tear_strength: specs.tear_strength.trim(),
+        tensile_strength: specs.tensile_strength.trim(),
+        dye_class: specs.dye_class.trim(),
+        thread_count: specs.thread_count.trim(),
+      };
+
+      const hasCompleteSpecs =
+        normalizedSpecs.gsm > 0 &&
+        normalizedSpecs.tear_strength.length > 0 &&
+        normalizedSpecs.tensile_strength.length > 0 &&
+        normalizedSpecs.dye_class.length > 0 &&
+        normalizedSpecs.thread_count.length > 0;
+
       if (article) {
-        await api.articles.update(article.id, formData);
-        if (specs.gsm > 0) {
-          const { id: _id, article_id: _articleId, ...specUpdates } = specs;
-          await api.articles.upsertSpecs(article.id, specUpdates);
+        await api.articles.update(article.id, articlePayload);
+        if (hasCompleteSpecs) {
+          await api.articles.upsertSpecs(article.id, normalizedSpecs);
         }
       } else {
-        const newArticle = await api.articles.create(formData);
-        if (specs.gsm > 0 && newArticle?.id) {
-          const { id: _id, article_id: _articleId, ...specUpdates } = specs;
-          await api.articles.upsertSpecs(newArticle.id, specUpdates);
+        const newArticle = await api.articles.create(articlePayload);
+        if (hasCompleteSpecs && newArticle?.id) {
+          await api.articles.upsertSpecs(newArticle.id, normalizedSpecs);
         }
       }
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-articles'] }); onClose(); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      if (article?.id) {
+        queryClient.invalidateQueries({ queryKey: ['article-specs', article.id] });
+      }
+      onClose();
+    },
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +178,7 @@ export function ArticleForm({ article, onClose }: ArticleFormProps) {
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                   </div>
                 )}
-                {uploading && <p style={{ fontSize: '0.875rem', color: 'hsl(220 10% 46%)' }}>Uploading...</p>}
+                {uploading && <p className="admin-modal-note">Uploading...</p>}
               </div>
               <div className="form-group full-width">
                 <label className="form-label">Article Name</label>
@@ -138,17 +194,17 @@ export function ArticleForm({ article, onClose }: ArticleFormProps) {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Price AED</label>
-                  <input type="number" step="0.01" className="form-input" value={formData.price_aed} onChange={e => setFormData(prev => ({ ...prev, price_aed: parseFloat(e.target.value) }))} required />
+                  <input type="number" step="0.01" className="form-input" value={formData.price_aed} onChange={e => setFormData(prev => ({ ...prev, price_aed: Number(e.target.value) || 0 }))} required />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Price USD</label>
-                  <input type="number" step="0.01" className="form-input" value={formData.price_usd} onChange={e => setFormData(prev => ({ ...prev, price_usd: parseFloat(e.target.value) }))} />
+                  <input type="number" step="0.01" className="form-input" value={formData.price_usd ?? ''} onChange={e => setFormData(prev => ({ ...prev, price_usd: parseOptionalPrice(e.target.value) }))} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Price PKR</label>
-                  <input type="number" step="0.01" className="form-input" value={formData.price_pkr} onChange={e => setFormData(prev => ({ ...prev, price_pkr: parseFloat(e.target.value) }))} />
+                  <input type="number" step="0.01" className="form-input" value={formData.price_pkr ?? ''} onChange={e => setFormData(prev => ({ ...prev, price_pkr: parseOptionalPrice(e.target.value) }))} />
                 </div>
               </div>
               <div className="form-group full-width">
@@ -156,12 +212,12 @@ export function ArticleForm({ article, onClose }: ArticleFormProps) {
                 <textarea className="form-textarea" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} />
               </div>
               <div className="form-group full-width">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label className="form-checkbox-row">
                   <input type="checkbox" checked={formData.in_stock} onChange={e => setFormData(prev => ({ ...prev, in_stock: e.target.checked }))} />
                   In Stock
                 </label>
               </div>
-              <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.25rem', marginTop: '1rem' }}>Specs (Optional)</h3>
+              <h3 className="form-section-title">Specs (Optional)</h3>
               <div className="form-row">
                 <div className="form-group"><label className="form-label">GSM</label><input type="number" className="form-input" value={specs.gsm || ''} onChange={e => setSpecs(prev => ({ ...prev, gsm: parseInt(e.target.value) || 0 }))} /></div>
                 <div className="form-group"><label className="form-label">Dye Class</label><input type="text" className="form-input" value={specs.dye_class} onChange={e => setSpecs(prev => ({ ...prev, dye_class: e.target.value }))} /></div>

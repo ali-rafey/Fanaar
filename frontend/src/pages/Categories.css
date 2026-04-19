@@ -1,6 +1,6 @@
 .categories-page {
   padding: 3rem 0;
-  background: hsl(var(--background));
+  background: var(--page-bg);
 }
 
 .categories-header {
@@ -65,4 +65,3 @@
     padding: 0 1.5rem 2.5rem;
   }
 }
-

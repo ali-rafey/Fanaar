@@ -67,6 +67,11 @@ export default {
         charcoal: "hsl(var(--charcoal))",
         terracotta: "hsl(var(--terracotta))",
         gold: "hsl(var(--gold))",
+        tone: {
+          bg: "var(--page-bg)",
+          overlay: "var(--overlay-heading)",
+          ink: "var(--heading-standard)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

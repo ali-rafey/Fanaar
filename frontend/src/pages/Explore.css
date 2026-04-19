@@ -5,6 +5,7 @@
   position: relative;
   justify-content: flex-end !important;
   padding-bottom: 4rem;
+  background: var(--page-bg);
 }
 
 .explore-hero-media {
@@ -73,7 +74,8 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.35em;
-  color: hsl(0 0% 100% / 0.5);
+  color: rgba(229, 234, 211, 0.82);
+  text-shadow: var(--overlay-shadow);
   display: block;
   margin-bottom: 1rem;
 }
@@ -81,14 +83,16 @@
 .explore-hero-title {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 7vw, 5rem);
-  color: hsl(0 0% 100%);
+  color: var(--overlay-heading);
+  text-shadow: var(--overlay-shadow);
   line-height: 1.1;
   margin-bottom: 1rem;
 }
 
 .explore-hero-desc {
   font-size: 0.95rem;
-  color: hsl(0 0% 100% / 0.55);
+  color: rgba(229, 234, 211, 0.76);
+  text-shadow: var(--overlay-shadow);
   margin-bottom: 2.5rem;
 }
 
@@ -104,13 +108,14 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: hsl(0 0% 100% / 0.35);
+  color: rgba(229, 234, 211, 0.66);
+  text-shadow: var(--overlay-shadow);
 }
 
 .explore-scroll-line {
   width: 1px;
   height: 2.5rem;
-  background: linear-gradient(to bottom, hsl(0 0% 100% / 0.4), transparent);
+  background: linear-gradient(to bottom, rgba(229, 234, 211, 0.72), transparent);
   animation: scrollPulse 2s ease-in-out infinite;
 }
 
@@ -183,8 +188,8 @@
 
 .explore-cat-header {
   padding: 2rem;
-  border-bottom: 1px solid hsl(var(--border));
-  background: hsl(var(--secondary));
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--page-bg);
 }
 
 .explore-cat-header-inner {
@@ -201,17 +206,17 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--background));
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.46);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
-  color: hsl(var(--foreground));
+  color: var(--heading-standard);
 }
 
 .explore-back-btn:hover {
-  background: hsl(var(--foreground));
-  color: hsl(var(--background));
+  background: var(--heading-standard);
+  color: var(--overlay-heading);
 }
 
 .explore-back-btn svg {

@@ -8,3 +8,7 @@ backend/.env.*
 node_modules
 .DS_Store
 Fanaar-Fabric-Project-File-Index.pdf
+
+# Codex local build artifacts
+backend/.codex-build/
+backend/.codex-build-2/

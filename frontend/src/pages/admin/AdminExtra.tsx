@@ -193,7 +193,11 @@ export default function AdminExtra() {
 
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="admin-empty">
+        <p>Loading extra settings…</p>
+      </div>
+    );
   }
 
   const heroMedia = settings?.hero_media;

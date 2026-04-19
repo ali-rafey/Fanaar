@@ -17,7 +17,7 @@
 .category-image-wrap {
   aspect-ratio: 3/4;
   overflow: hidden;
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background: hsl(var(--secondary));
   position: relative;
 }
@@ -85,13 +85,15 @@
 .category-name {
   font-family: var(--font-display);
   font-size: 1.35rem;
-  color: hsl(0 0% 100%);
+  color: var(--overlay-heading);
+  text-shadow: var(--overlay-shadow);
   margin-bottom: 0.15rem;
 }
 
 .category-desc {
   font-size: 0.75rem;
-  color: hsl(0 0% 100% / 0.6);
+  color: rgba(229, 234, 211, 0.78);
+  text-shadow: var(--overlay-shadow);
 }
 
 /* Skeleton */

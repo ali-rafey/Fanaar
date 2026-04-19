@@ -128,64 +128,98 @@ export default function AdminBlogs() {
     return (
         <>
             {isLoading ? (
-                <p>Loading...</p>
+                <div className="admin-empty">
+                    <p>Loading blogs…</p>
+                </div>
             ) : !blogs.length ? (
                 <div className="admin-empty">
-                    <FileText style={{ width: '3rem', height: '3rem', color: 'hsl(220 10% 46%)' }} />
+                    <FileText />
                     <p>No blogs yet.</p>
                 </div>
             ) : (
-                <div className="articles-table-wrap">
-                    <table className="articles-table">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Title</th>
-                                <th>Excerpt</th>
-                                <th>Tag</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {blogs.map((blog) => (
-                                <tr key={blog.id}>
-                                    <td>
-                                        {blog.image_url ? (
-                                            <img src={blog.image_url} alt={blog.title} className="article-row-image" />
-                                        ) : (
-                                            <div className="article-row-placeholder"><FileText size={16} /></div>
-                                        )}
-                                    </td>
-                                    <td>{blog.title}</td>
-                                    <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {blog.excerpt || '-'}
-                                    </td>
-                                    <td>{blog.tag || '-'}</td>
-                                    <td>
-                                        <div className="article-actions">
-                                            <button className="btn-icon" onClick={() => startEdit(blog)}><Pencil /></button>
-                                            <button className="btn-icon btn-danger" onClick={() => {
-                                                if (confirm(`Delete "${blog.title}"?`)) deleteMutation.mutate(blog.id);
-                                            }}><Trash2 /></button>
-                                        </div>
-                                    </td>
+                <section className="admin-list-shell">
+                    <div className="admin-table-wrap">
+                        <table className="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Blog</th>
+                                    <th>Tag</th>
+                                    <th>Published</th>
+                                    <th>Excerpt</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {blogs.map((blog) => (
+                                    <tr key={blog.id}>
+                                        <td>
+                                            <div className="admin-table-primary-cell">
+                                                {blog.image_url ? (
+                                                    <img className="admin-table-thumb" src={blog.image_url} alt={blog.title} />
+                                                ) : (
+                                                    <div className="admin-table-thumb admin-table-thumb--placeholder">
+                                                        <FileText size={16} />
+                                                    </div>
+                                                )}
+                                                <div className="admin-table-copy">
+                                                    <span className="admin-table-title">{blog.title}</span>
+                                                    <span className="admin-table-subtitle">
+                                                        {blog.content?.slice(0, 88) || 'No content added yet.'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="admin-table-chip admin-table-chip--neutral">
+                                                {blog.tag || 'Editorial'}
+                                            </span>
+                                        </td>
+                                        <td className="admin-table-date">
+                                            {new Date(blog.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td>
+                                            <span className="admin-table-subtitle admin-table-subtitle--clamp">
+                                                {blog.excerpt || 'No excerpt added yet.'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="admin-table-actions">
+                                                <button
+                                                    className="admin-icon-btn"
+                                                    onClick={() => startEdit(blog)}
+                                                    aria-label={`Edit ${blog.title}`}
+                                                >
+                                                    <Pencil />
+                                                </button>
+                                                <button
+                                                    className="admin-icon-btn admin-icon-btn--danger"
+                                                    onClick={() => {
+                                                        if (confirm(`Delete "${blog.title}"?`)) deleteMutation.mutate(blog.id);
+                                                    }}
+                                                    aria-label={`Delete ${blog.title}`}
+                                                >
+                                                    <Trash2 />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             )}
 
             {/* Add / Edit Modal */}
             {isFormOpen && (
                 <div className="modal-overlay" onClick={resetForm}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '36rem' }}>
+                    <div className="modal-content modal-content--wide" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="modal-title">{editingBlog ? 'Edit Blog' : 'Add Blog'}</h2>
                             <button className="modal-close" onClick={resetForm}><X /></button>
                         </div>
                         <form onSubmit={e => { e.preventDefault(); saveMutation.mutate(); }}>
-                            <div className="modal-body" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+                            <div className="modal-body modal-body--scroll">
                                 <div className="article-form">
                                     <div className="form-group">
                                         <label className="form-label">Title</label>
@@ -212,9 +246,9 @@ export default function AdminBlogs() {
                                     <div className="form-group">
                                         <label className="form-label">Image</label>
                                         {imagePreview ? (
-                                            <div style={{ position: 'relative' }}>
-                                                <img src={imagePreview} alt="" style={{ width: '100%', borderRadius: '0.5rem', maxHeight: '16rem', objectFit: 'cover' }} />
-                                                <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'hsl(220 16% 18% / 0.55)', color: 'white', border: '1px solid hsl(0 0% 100% / 0.35)', borderRadius: '50%', width: '1.5rem', height: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
+                                            <div className="admin-media-frame">
+                                                <img src={imagePreview} alt="" />
+                                                <button type="button" className="admin-image-remove-btn" onClick={() => { setImageFile(null); setImagePreview(null); }}><X size={14} /></button>
                                             </div>
                                         ) : (
                                             <button type="button" className="admin-add-btn" onClick={() => fileRef.current?.click()}>

@@ -4,74 +4,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fabric B2B Showroom Design System
-   Sophisticated neutral palette that lets fabrics be the hero
-*/
-
 @layer base {
   :root {
-    /* Core palette - clean white & grey */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --page-bg: #f0f0f0;
+    --overlay-heading: #e5ead3;
+    --heading-standard: #000000;
+    --text-muted: rgba(0, 0, 0, 0.62);
+    --text-soft: rgba(0, 0, 0, 0.42);
+    --surface-soft: rgba(255, 255, 255, 0.34);
+    --surface-strong: rgba(255, 255, 255, 0.72);
+    --surface-solid: #f8f8f6;
+    --border-soft: rgba(0, 0, 0, 0.1);
+    --border-strong: rgba(0, 0, 0, 0.18);
+    --overlay-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 
-    --card: 0 0% 99%;
-    --card-foreground: 0 0% 10%;
+    --background: 0 0% 94%;
+    --foreground: 0 0% 0%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 0%;
 
-    /* Dark grey primary */
-    --primary: 0 0% 15%;
-    --primary-foreground: 0 0% 100%;
+    --popover: 0 0% 97%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Light grey secondary */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 15%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 73 33% 87%;
 
-    /* Muted tones */
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 45%;
+    --secondary: 0 0% 91%;
+    --secondary-foreground: 0 0% 0%;
 
-    /* Subtle grey accent */
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 12%;
+    --muted: 0 0% 89%;
+    --muted-foreground: 0 0% 33%;
 
-    /* Keep destructive for actions */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 73 33% 87%;
+    --accent-foreground: 0 0% 0%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 92%;
-    --ring: 0 0% 15%;
+    --destructive: 0 63% 48%;
+    --destructive-foreground: 0 0% 98%;
 
-    --radius: 0.5rem;
+    --border: 0 0% 82%;
+    --input: 0 0% 96%;
+    --ring: 0 0% 0%;
 
-    /* Sidebar - elegant dark grey */
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 92%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 8%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 0 0% 50%;
+    --radius: 1rem;
 
-    /* Custom tokens */
-    --cream: 0 0% 98%;
-    --stone: 0 0% 85%;
-    --charcoal: 0 0% 15%;
-    --terracotta: 0 0% 35%;
-    --gold: 0 0% 60%;
+    --sidebar-background: 0 0% 94%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary-foreground: 73 33% 87%;
+    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 82%;
+    --sidebar-ring: 0 0% 0%;
 
-    /* Typography */
+    --cream: 0 0% 96%;
+    --stone: 0 0% 90%;
+    --charcoal: 0 0% 0%;
+    --terracotta: 0 0% 14%;
+    --gold: 73 20% 84%;
+
     --font-display: 'DM Serif Display', serif;
     --font-body: 'Inter', sans-serif;
     --font-arabic: 'Amiri', serif;
 
-    /* Shadows */
-    --shadow-soft: 0 2px 15px -3px hsl(0 0% 0% / 0.06);
-    --shadow-card: 0 4px 25px -5px hsl(0 0% 0% / 0.08);
-    --shadow-elevated: 0 10px 40px -10px hsl(0 0% 0% / 0.12);
+    --shadow-soft: 0 16px 34px -28px rgba(0, 0, 0, 0.1);
+    --shadow-card: 0 18px 40px -32px rgba(0, 0, 0, 0.12);
+    --shadow-elevated: 0 22px 48px -36px rgba(0, 0, 0, 0.14);
   }
 }
 
@@ -85,13 +83,24 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply text-foreground antialiased;
+    background: var(--page-bg);
     font-family: var(--font-body);
+  }
+
+  #root {
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply tracking-tight;
+    color: var(--heading-standard);
+  }
+
+  ::selection {
+    background: rgba(0, 0, 0, 0.12);
+    color: var(--heading-standard);
   }
 }
 
@@ -102,6 +111,15 @@
 
   .fabric-texture {
     @apply bg-gradient-to-br from-stone/30 to-cream;
+  }
+
+  .context-heading-overlay {
+    color: var(--overlay-heading);
+    text-shadow: var(--overlay-shadow);
+  }
+
+  .context-heading-standard {
+    color: var(--heading-standard);
   }
 
   .sidebar-nav-item {
@@ -128,5 +146,11 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .surface-panel {
+    background: var(--surface-strong);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
   }
 }

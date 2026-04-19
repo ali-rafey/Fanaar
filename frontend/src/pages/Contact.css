@@ -3,15 +3,15 @@
 /* ---- Hero ---- */
 .contact-hero-section {
   position: relative;
-  background: hsl(var(--foreground));
+  background: var(--page-bg);
   overflow: hidden;
 }
 
 .contact-hero-bg {
   position: absolute;
   inset: 0;
-  opacity: 0.1;
-  background: radial-gradient(ellipse at 70% 30%, hsl(0 0% 50%) 0%, transparent 60%);
+  opacity: 1;
+  background: radial-gradient(ellipse at 70% 30%, rgba(229, 234, 211, 0.84) 0%, transparent 60%);
 }
 
 .contact-hero-content {
@@ -27,7 +27,7 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.25em;
-  color: hsl(0 0% 100% / 0.45);
+  color: var(--text-muted);
   display: block;
   margin-bottom: 1rem;
 }
@@ -35,13 +35,13 @@
 .contact-hero-title {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 7vw, 4.5rem);
-  color: hsl(0 0% 100%);
+  color: var(--heading-standard);
   margin-bottom: 0.75rem;
 }
 
 .contact-hero-desc {
   font-size: 1rem;
-  color: hsl(0 0% 100% / 0.55);
+  color: var(--text-muted);
   line-height: 1.7;
 }
 
@@ -119,9 +119,10 @@
 /* Consultation card */
 .consultation-card {
   padding: 2rem;
-  background: hsl(var(--foreground));
-  border-radius: 0.75rem;
-  color: hsl(var(--background));
+  background: var(--surface-solid);
+  border-radius: 1rem;
+  border: 1px solid var(--border-soft);
+  color: var(--heading-standard);
   animation: cardSlideUp 0.6s ease-out 0.2s both;
 }
 
@@ -143,7 +144,7 @@
 }
 
 .consultation-text {
-  color: hsl(var(--background) / 0.65);
+  color: var(--text-muted);
   margin-bottom: 1.25rem;
   line-height: 1.7;
   font-size: 0.9rem;
@@ -162,7 +163,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: hsl(var(--background) / 0.75);
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -170,7 +171,7 @@
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 50%;
-  background: hsl(var(--background) / 0.4);
+  background: rgba(0, 0, 0, 0.28);
   flex-shrink: 0;
 }
 
@@ -179,10 +180,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  border: none;
-  border-radius: 0.375rem;
+  background: var(--heading-standard);
+  color: var(--overlay-heading);
+  border: 1px solid transparent;
+  border-radius: 999px;
   font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
