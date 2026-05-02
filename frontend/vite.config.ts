@@ -24,25 +24,11 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     reportCompressedSize: false,
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return undefined;
-          if (id.includes("react-dom") || id.includes("/react/") || id.includes("scheduler")) {
-            return "react-vendor";
-          }
-          if (id.includes("@radix-ui")) return "radix-vendor";
-          if (id.includes("@tanstack/react-query")) return "query-vendor";
-          if (id.includes("react-router")) return "router-vendor";
-          if (id.includes("recharts") || id.includes("d3-")) return "charts-vendor";
-          if (id.includes("lucide-react")) return "icons-vendor";
-          if (id.includes("date-fns")) return "date-vendor";
-          if (id.includes("zod") || id.includes("react-hook-form") || id.includes("@hookform")) {
-            return "forms-vendor";
-          }
-          return "vendor";
-        },
-      },
-    },
+    // Note: route-level code splitting via React.lazy in App.tsx already
+    // produces per-page chunks. We intentionally do NOT use rollup
+    // manualChunks — splitting node_modules by library can break React's
+    // module identity (a chunk evaluating before its React import resolves
+    // throws "Cannot read properties of undefined (reading 'createContext')").
+    // Vite's default chunking is already correct and well-cached.
   },
 }));
