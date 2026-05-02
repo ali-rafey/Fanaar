@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ArrowLeft } from 'lucide-react';
+import { useSEO } from '@/hooks/use-seo';
 import './BlogDetail.css';
 
 export default function BlogDetail() {
@@ -16,6 +17,14 @@ export default function BlogDetail() {
       return data;
     },
     enabled: !!id,
+  });
+
+  useSEO({
+    title: blog?.title || "Blog",
+    description: blog?.excerpt || "Stories about fabric, craftsmanship, and textile heritage.",
+    canonicalPath: id ? `/blog/${id}` : "/blog",
+    image: blog?.image_url || undefined,
+    type: "article",
   });
 
   if (isLoading) {

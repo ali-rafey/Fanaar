@@ -4,6 +4,7 @@ import { api } from '@/api/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { FabricArticle, FabricSpecs } from '@/types/fabric';
+import { useSEO } from '@/hooks/use-seo';
 import './ArticleDetail.css';
 
 export default function ArticleDetail() {
@@ -30,6 +31,16 @@ export default function ArticleDetail() {
       return data as unknown as FabricSpecs | null;
     },
     enabled: !!id,
+  });
+
+  useSEO({
+    title: article?.name || "Fabric",
+    description:
+      article?.description ||
+      "Premium fabric specification — composition, weight, weave, and technical details from Fanaar.",
+    canonicalPath: id ? `/article/${id}` : undefined,
+    image: article?.hero_image_url || undefined,
+    type: "article",
   });
 
   const handleBack = () => {

@@ -18,4 +18,31 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    target: "es2020",
+    cssCodeSplit: true,
+    sourcemap: false,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("react-dom") || id.includes("/react/") || id.includes("scheduler")) {
+            return "react-vendor";
+          }
+          if (id.includes("@radix-ui")) return "radix-vendor";
+          if (id.includes("@tanstack/react-query")) return "query-vendor";
+          if (id.includes("react-router")) return "router-vendor";
+          if (id.includes("recharts") || id.includes("d3-")) return "charts-vendor";
+          if (id.includes("lucide-react")) return "icons-vendor";
+          if (id.includes("date-fns")) return "date-vendor";
+          if (id.includes("zod") || id.includes("react-hook-form") || id.includes("@hookform")) {
+            return "forms-vendor";
+          }
+          return "vendor";
+        },
+      },
+    },
+  },
 }));

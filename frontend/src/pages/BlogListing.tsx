@@ -2,10 +2,17 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { useSEO } from '@/hooks/use-seo';
 import './BlogListing.css';
 
 export default function BlogListing() {
   const navigate = useNavigate();
+
+  useSEO({
+    title: "Blog",
+    description: "Stories about fabric, craftsmanship, and Fanaar's journey in textiles.",
+    canonicalPath: "/blog",
+  });
 
   const { data: blogs = [], isLoading } = useQuery({
     queryKey: ['all-blogs'],

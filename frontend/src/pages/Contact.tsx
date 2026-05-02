@@ -1,5 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { useSEO } from '@/hooks/use-seo';
 import './Contact.css';
 
 /* Business hours data */
@@ -11,6 +12,13 @@ const hours = [
 ];
 
 export default function Contact() {
+  useSEO({
+    title: "Contact",
+    description:
+      "Get in touch with Fanaar for fabric specifications, custom textile development, or showroom appointments. Mon–Sat hours and direct contact details.",
+    canonicalPath: "/contact",
+  });
+
   return (
     <MainLayout snap>
       {/* ===== Section 1: Hero header ===== */}

@@ -1,5 +1,7 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
 import { corsOptions } from "./middleware/cors.js";
 import { errorMiddleware, asyncHandler, ok } from "./lib/http.js";
@@ -32,14 +34,71 @@ import * as uploadsController from "./modules/uploads/uploads.controller.js";
 const app = express();
 
 app.disable("x-powered-by");
+// Trust the platform proxy (Vercel) so req.ip reflects the real client.
+// Required for express-rate-limit to key correctly behind a proxy.
+app.set("trust proxy", 1);
+
+// Security headers via helmet. We disable the built-in CSP because this is a
+// JSON API consumed cross-origin by the SPA — a strict CSP here is meaningless
+// and can break image/video proxying. CSP for the SPA itself is set on the
+// frontend host.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+
 app.use(cors(corsOptions));
-app.use((_, res, next) => {
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
+app.use(express.json({ limit: env.MAX_JSON_BODY_SIZE }));
+
+// Rate limiting. Public GETs get a generous bucket; auth/upload endpoints get
+// a much tighter one to deter credential stuffing and abuse.
+const publicLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 240, // 4 req/sec sustained per IP — comfortable for normal SPA usage
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: (req) => req.method === "OPTIONS" || req.path === "/health",
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20, // 20 sign-in / sign-up / refresh attempts per 15 min per IP
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+});
+
+app.use(publicLimiter);
+
+// Cache-Control for public, cacheable GETs. Edge caches (Vercel/CDN) honor
+// s-maxage; browsers see max-age=0 so they re-validate. SWR keeps the API
+// snappy while content stays reasonably fresh.
+const publicCachePaths = new Set([
+  "/home",
+  "/categories",
+  "/articles",
+  "/blogs",
+  "/site-settings",
+]);
+app.use((req, res, next) => {
+  if (req.method !== "GET") return next();
+  if (publicCachePaths.has(req.path) || req.path.startsWith("/articles/") || req.path.startsWith("/blogs/")) {
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+    );
+  }
   next();
 });
-app.use(express.json({ limit: env.MAX_JSON_BODY_SIZE }));
 
 app.get(
   "/health",
@@ -51,16 +110,18 @@ app.get(
 app.get("/categories", asyncHandler(categoriesController.list));
 app.post(
   "/auth/sign-in",
+  authLimiter,
   validateBody(signInSchema),
   asyncHandler(authController.signIn),
 );
 app.post(
   "/auth/sign-up",
+  authLimiter,
   validateBody(signUpSchema),
   asyncHandler(authController.signUp),
 );
 app.post("/auth/sign-out", asyncHandler(authController.signOut));
-app.post("/auth/refresh", asyncHandler(authController.refresh));
+app.post("/auth/refresh", authLimiter, asyncHandler(authController.refresh));
 app.get("/auth/me", asyncHandler(authController.me));
 
 app.get("/articles", asyncHandler(articlesController.list));
@@ -201,7 +262,12 @@ app.put(
     await settingsController.update(req, res);
   }),
 );
-app.post("/admin/upload", requireAdmin, asyncHandler(uploadsController.upload));
+app.post(
+  "/admin/upload",
+  uploadLimiter,
+  requireAdmin,
+  asyncHandler(uploadsController.upload),
+);
 
 app.use(errorMiddleware);
 

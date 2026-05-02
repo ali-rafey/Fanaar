@@ -1,4 +1,5 @@
 import { MainLayout } from '@/components/layout/MainLayout';
+import { useSEO } from '@/hooks/use-seo';
 import './About.css';
 
 /* Stats displayed in the about page */
@@ -17,6 +18,13 @@ const processes = [
 ];
 
 export default function About() {
+  useSEO({
+    title: "About",
+    description:
+      "Six decades of textile craft. Fanaar pairs precision engineering with fabric heritage — quality testing, color mastery, sustainable practices, and bespoke development.",
+    canonicalPath: "/about",
+  });
+
   return (
     <MainLayout snap>
       {/* ===== Section 1: Hero ===== */}

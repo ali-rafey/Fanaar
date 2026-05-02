@@ -4,6 +4,7 @@ import { CategoryGrid } from '@/components/shop/CategoryGrid';
 import { ArticleGrid } from '@/components/shop/ArticleGrid';
 import { ArrowLeft } from 'lucide-react';
 import { getCategoryInfo } from '@/types/fabric';
+import { useSEO } from '@/hooks/use-seo';
 import './Categories.css';
 import './Explore.css';
 
@@ -12,6 +13,20 @@ export default function Categories() {
   const { category } = useParams<{ category?: string }>();
   const location = useLocation();
   const categoryInfo = category ? getCategoryInfo(category) : null;
+
+  useSEO(
+    category && categoryInfo
+      ? {
+          title: `${categoryInfo.name} Fabrics`,
+          description: `Explore Fanaar's ${categoryInfo.name.toLowerCase()} fabric collection — premium textiles engineered for quality, precision, and luxury.`,
+          canonicalPath: `/categories/${category}`,
+        }
+      : {
+          title: "Categories",
+          description: "Browse Fanaar's full fabric catalog by category — premium textiles for every application.",
+          canonicalPath: "/categories",
+        },
+  );
 
   // Category articles view: /categories/cotton etc. Back goes to /categories.
   if (category && categoryInfo) {

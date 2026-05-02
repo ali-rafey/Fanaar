@@ -73,6 +73,8 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-card);
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .splash-mark::before {
@@ -88,6 +90,9 @@
   grid-area: 1 / 1;
   line-height: 0.9;
   white-space: nowrap;
+  text-align: center;
+  justify-self: center;
+  align-self: center;
 }
 
 .splash-arabic {

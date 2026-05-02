@@ -18,7 +18,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     <div className={`splash-screen ${fadeOut ? 'fade-out' : ''}`}>
       <div className="splash-content">
         <div className="splash-mark" aria-hidden="true">
-          <span className="splash-arabic-shadow">فنار</span>
+          <span className="splash-arabic-shadow" lang="ar" dir="rtl">فنار</span>
           <span className="splash-arabic" lang="ar" dir="rtl">فنار</span>
         </div>
         <div className="splash-caption-wrap">

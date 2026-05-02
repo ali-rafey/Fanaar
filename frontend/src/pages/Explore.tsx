@@ -9,6 +9,7 @@ import { BlogsSection } from '@/components/shop/BlogsSection';
 import { ProcessSection } from '@/components/shop/ProcessSection';
 import { ArrowLeft } from 'lucide-react';
 import { getCategoryInfo } from '@/types/fabric';
+import { useSEO } from '@/hooks/use-seo';
 import './Explore.css';
 
 export default function Explore() {
@@ -16,6 +17,20 @@ export default function Explore() {
   const navigate = useNavigate();
   const location = useLocation();
   const categoryInfo = category ? getCategoryInfo(category) : null;
+
+  useSEO(
+    category && categoryInfo
+      ? {
+          title: `${categoryInfo.name} Fabrics`,
+          description: `Browse Fanaar's ${categoryInfo.name.toLowerCase()} fabric collection — premium textiles engineered for quality and luxury.`,
+          canonicalPath: `/explore/${category}`,
+        }
+      : {
+          title: "Premium Textiles",
+          description: "Fanaar — premium textile manufacturing. Discover fabrics that define quality, precision, and luxury.",
+          canonicalPath: "/",
+        },
+  );
 
   // Restore scroll when returning from category articles page or blog detail.
   // Must run when we switch to main view (category becomes undefined), not only on mount.
@@ -137,9 +152,10 @@ export default function Explore() {
                 {heroImageUrl ? (
                   <img
                     src={heroImageUrl}
-                    alt="Hero"
+                    alt="Premium textile fabric backdrop"
                     className="explore-hero-poster"
                     fetchPriority="high"
+                    decoding="async"
                   />
                 ) : null}
                 <video
@@ -149,7 +165,7 @@ export default function Explore() {
                   loop
                   playsInline
                   autoPlay
-                  preload="auto"
+                  preload="metadata"
                   poster={heroImageUrl || undefined}
                   crossOrigin="anonymous"
                   disablePictureInPicture
@@ -159,10 +175,17 @@ export default function Explore() {
                   onCanPlay={() => setHeroVideoReady(true)}
                   onError={() => setHeroVideoErrored(true)}
                   style={heroVideoStyle}
+                  aria-hidden="true"
                 />
               </>
             ) : (
-              <img src={heroImageUrl} alt="Hero" className="explore-hero-img" fetchPriority="high" />
+              <img
+                src={heroImageUrl}
+                alt="Premium textile fabric backdrop"
+                className="explore-hero-img"
+                fetchPriority="high"
+                decoding="async"
+              />
             )
           ) : (
             <div className="explore-hero-fallback" />
